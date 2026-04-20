@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수학본부 성과지표 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+  :root{--bg:#0f1117;--surface:#181c25;--surface2:#1e2330;--border:#2a2f3e;--accent:#4f8ef7;--accent2:#34d39a;--accent3:#f7874f;--text:#e4e8f0;--text-muted:#6b7390;--danger:#f75f5f;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface);}
+  .logo-mark{width:31px;height:31px;background:var(--accent);border-radius:7px;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+  header h1{font-size:15px;font-weight:600;letter-spacing:-.3px;}
+  .data-status{margin-left:auto;font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);flex-shrink:0;transition:background .3s;}
+  .dot.ok{background:var(--accent2);}
+  .dot.loading{background:var(--accent3);animation:pulse 1s infinite;}
+  .dot.err{background:var(--danger);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .layout{display:flex;flex:1;overflow:hidden;}
+  aside{width:194px;background:var(--surface);border-right:1px solid var(--border);padding:16px 10px;display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
+  .nav-label{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--text-muted);text-transform:uppercase;padding:4px 8px 5px;}
+  .nav-item{padding:7px 11px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text-muted);transition:all .15s;display:flex;align-items:center;gap:8px;border:1px solid transparent;}
+  .nav-item:hover{background:var(--surface2);color:var(--text);}
+  .nav-item.active{background:rgba(79,142,247,.12);color:var(--accent);border-color:rgba(79,142,247,.25);font-weight:500;}
+  .nav-divider{height:1px;background:var(--border);margin:8px 0;}
+  main{flex:1;padding:20px 24px;overflow-y:auto;}
+  .page{display:none;}.page.active{display:block;}
+
+  /* Auto-load banner */
+  .load-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:16px;border:1px solid;}
+  .load-banner.loading{background:rgba(247,135,79,.07);border-color:rgba(247,135,79,.25);color:var(--accent3);}
+  .load-banner.ok{background:rgba(52,211,154,.07);border-color:rgba(52,211,154,.2);color:var(--accent2);}
+  .load-banner.err{background:rgba(247,95,95,.07);border-color:rgba(247,95,95,.2);color:var(--danger);}
+  .load-banner.manual{background:rgba(79,142,247,.07);border-color:rgba(79,142,247,.2);color:var(--accent);}
+
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .section-title{font-size:16px;font-weight:700;letter-spacing:-.4px;display:flex;align-items:center;gap:8px;}
+  .section-title::before{content:'';display:inline-block;width:4px;height:15px;border-radius:2px;}
+  .section-title.a::before{background:var(--accent);}
+  .section-title.b::before{background:var(--accent2);}
+  .mode-tabs{display:flex;gap:3px;background:var(--surface2);border-radius:8px;padding:3px;border:1px solid var(--border);}
+  .mode-tab{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all .15s;}
+  .mode-tab.active.ta{background:var(--accent);color:#fff;}
+  .mode-tab.active.tb{background:var(--accent2);color:#0f1117;}
+  .controls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px;padding:13px 15px;background:var(--surface);border-radius:9px;border:1px solid var(--border);}
+  .ctrl-group{display:flex;flex-direction:column;gap:4px;}
+  .ctrl-group label{font-size:10px;color:var(--text-muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
+  .ctrl-group input[type="date"],.ctrl-group select{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color .15s;cursor:pointer;}
+  .ctrl-group input[type="date"]:focus,.ctrl-group select:focus{border-color:var(--accent);}
+  .btn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;font-weight:600;transition:all .15s;}
+  .btn-a{background:var(--accent);color:#fff;}.btn-a:hover{background:#3a7ae8;}
+  .btn-b{background:var(--accent2);color:#0f1117;}.btn-b:hover{background:#28c48a;}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-sm{padding:5px 11px;font-size:11px;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-bottom:16px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 14px;position:relative;overflow:hidden;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .kpi-card.c-blue::before{background:var(--accent);}
+  .kpi-card.c-green::before{background:var(--accent2);}
+  .kpi-card.c-orange::before{background:var(--accent3);}
+  .kpi-card.c-red::before{background:var(--danger);}
+  .kpi-card.c-purple::before{background:#a78bfa;}
+  .kpi-label{font-size:10px;color:var(--text-muted);margin-bottom:5px;font-weight:600;letter-spacing:.3px;}
+  .kpi-value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;letter-spacing:-1px;line-height:1;}
+  .kpi-sub{font-size:10px;color:var(--text-muted);margin-top:4px;}
+  .viz-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:16px;}
+  @media(max-width:860px){.viz-grid{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:15px;}
+  .card.full{grid-column:1/-1;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+  .card-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;}
+  canvas{max-height:210px;}
+  .table-wrap{overflow-x:auto;max-height:440px;overflow-y:auto;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  thead{position:sticky;top:0;z-index:2;}
+  thead th{text-align:right;padding:7px 9px;font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--surface);white-space:nowrap;text-transform:uppercase;}
+  thead th.txt{text-align:left;}
+  tbody tr{transition:background .1s;}tbody tr:hover{background:rgba(255,255,255,.02);}
+  tbody td{padding:8px 9px;border-bottom:1px solid rgba(42,47,62,.45);font-family:'IBM Plex Mono',monospace;font-size:11px;white-space:nowrap;text-align:right;}
+  tbody td.txt{font-family:'Noto Sans KR',sans-serif;font-size:12px;text-align:left;}
+  tbody tr.row-summary td{background:rgba(79,142,247,.07);font-weight:600;color:var(--accent);}
+  tbody tr.row-retired td{color:var(--text-muted);font-style:italic;}
+  .pct-good{color:var(--accent2);}.pct-bad{color:var(--danger);}
+  .upload-area{border:2px dashed var(--border);border-radius:9px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);margin-bottom:14px;}
+  .upload-area:hover,.upload-area.drag{border-color:var(--accent);background:rgba(79,142,247,.04);}
+  .upload-icon{font-size:26px;margin-bottom:7px;opacity:.5;}
+  .upload-area p{font-size:12px;color:var(--text-muted);line-height:1.7;}
+  .upload-area strong{color:var(--accent);}
+  #fileInput{display:none;}
+  .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;}
+  .badge-blue{background:rgba(79,142,247,.15);color:var(--accent);}
+  .badge-green{background:rgba(52,211,154,.15);color:var(--accent2);}
+  .badge-gray{background:rgba(107,115,144,.15);color:var(--text-muted);}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);}
+  .empty-icon{font-size:34px;margin-bottom:9px;opacity:.4;}
+  .empty-state p{font-size:13px;line-height:1.8;}
+  .period-panel{display:none;}.period-panel.active{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+  .filter-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+  .pill{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text-muted);transition:all .15s;background:var(--surface);}
+  .pill:hover{border-color:var(--accent);color:var(--accent);}
+  .pill.active{background:rgba(79,142,247,.13);border-color:rgba(79,142,247,.35);color:var(--accent);}
+  .pill.active.gb{background:rgba(52,211,154,.13);border-color:rgba(52,211,154,.35);color:var(--accent2);}
+
+  /* Source toggle */
+  .source-toggle{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);margin-bottom:14px;}
+  .toggle-btn{padding:3px 10px;border-radius:5px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+  .toggle-btn.active{background:rgba(79,142,247,.13);border-color:rgba(79,142,247,.35);color:var(--accent);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-mark">수학</div>
+  <h1>수학본부 성과지표 대시보드</h1>
+  <div class="data-status">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusText">데이터 로딩 중…</span>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="nav-label">성과지표</div>
+    <div class="nav-item active" onclick="switchPage('page-a')">
+      <span>📊</span> 기준 A
+      <span class="badge badge-blue" style="margin-left:auto">팀별</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('page-b')">
+      <span>👤</span> 기준 B
+      <span class="badge badge-green" style="margin-left:auto">팀원별</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-label">데이터</div>
+    <div class="nav-item" onclick="switchPage('page-upload')">
+      <span>📂</span> 수동 업로드
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- ══ UPLOAD PAGE ══ -->
+    <div id="page-upload" class="page">
+      <div class="section-header"><div class="section-title a">데이터 소스</div></div>
+
+      <!-- GitHub auto-load -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div class="card-title">🔗 GitHub 자동 로드</div>
+          <button class="btn btn-a btn-sm" onclick="loadFromGitHub()">↻ 지금 새로고침</button>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.8;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);padding:8px 12px;border-radius:6px;border:1px solid var(--border);margin-bottom:10px;word-break:break-all;">
+            https://raw.githubusercontent.com/jaehyun-pt/math_KPI/main/data/metrics_raw.csv
+          </div>
+          페이지를 열 때마다 위 URL에서 최신 CSV를 자동으로 불러옵니다.<br>
+          n8n이 매일 오전 6시에 GitHub을 업데이트하면 대시보드도 자동 반영됩니다.
+        </div>
+        <div id="githubLoadStatus" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Manual upload fallback -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">📁 수동 업로드 (선택)</div></div>
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">📁</div>
+          <p>GitHub 자동 로드가 안 될 때 사용하세요.<br><strong>클릭하거나 드래그</strong>해서 CSV를 업로드합니다.</p>
+        </div>
+        <input type="file" id="fileInput" accept=".csv" onchange="handleFile(event)">
+      </div>
+    </div>
+
+    <!-- ══ PAGE A : 팀별 ══ -->
+    <div id="page-a" class="page active">
+      <div id="a-load-banner"></div>
+      <div class="section-header">
+        <div class="section-title a">기준 A &nbsp;·&nbsp; 팀별 성과지표</div>
+        <div class="mode-tabs" id="modeTabsA">
+          <div class="mode-tab active ta" onclick="setMode('a','weekly',this)">주차별</div>
+          <div class="mode-tab ta"        onclick="setMode('a','monthly',this)">월별</div>
+          <div class="mode-tab ta"        onclick="setMode('a','quarterly',this)">분기별</div>
+          <div class="mode-tab ta"        onclick="setMode('a','custom',this)">기간설정</div>
+        </div>
+      </div>
+      <div class="controls">
+        <div id="a-ctrl-range" class="period-panel active">
+          <div class="ctrl-group"><label>시작일</label><input type="date" id="a-range-start"></div>
+          <div class="ctrl-group"><label>종료일</label><input type="date" id="a-range-end"></div>
+        </div>
+        <div id="a-ctrl-custom" class="period-panel">
+          <div class="ctrl-group"><label>시작일</label><input type="date" id="a-custom-start"></div>
+          <div class="ctrl-group"><label>종료일</label><input type="date" id="a-custom-end"></div>
+        </div>
+        <button class="btn btn-a" onclick="runPage('a')">🔍 분석 실행</button>
+        <button class="btn btn-secondary" onclick="exportPage('a')">⬇ CSV</button>
+      </div>
+      <div class="filter-pills" id="a-pills"></div>
+      <div class="kpi-grid" id="a-kpi"><div class="empty-state" style="grid-column:1/-1;padding:14px"><p>분석 실행 후 KPI가 표시됩니다.</p></div></div>
+      <div class="viz-grid" id="a-charts" style="display:none">
+        <div class="card"><div class="card-header"><div class="card-title">📉 이탈률 추이</div></div><canvas id="a-chart-churn"></canvas></div>
+        <div class="card"><div class="card-header"><div class="card-title">📊 재수강률 · 연장률</div></div><canvas id="a-chart-renew"></canvas></div>
+        <div class="card"><div class="card-header"><div class="card-title">🏃 개강 vs 이탈 PT</div></div><canvas id="a-chart-open"></canvas></div>
+        <div class="card"><div class="card-header"><div class="card-title">📦 기초PT 추이</div></div><canvas id="a-chart-basic"></canvas></div>
+      </div>
+      <div class="card full">
+        <div class="card-header"><div class="card-title">📋 상세 지표 테이블</div><span id="a-row-count" style="font-size:11px;color:var(--text-muted)"></span></div>
+        <div class="table-wrap" id="a-table"><div class="empty-state"><div class="empty-icon">🔍</div><p>분석 실행을 누르세요.</p></div></div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE B : 팀원별 ══ -->
+    <div id="page-b" class="page">
+      <div id="b-load-banner"></div>
+      <div class="section-header">
+        <div class="section-title b">기준 B &nbsp;·&nbsp; 팀원별 성과지표</div>
+        <div class="mode-tabs" id="modeTabsB">
+          <div class="mode-tab active tb" onclick="setMode('b','weekly',this)">주차별</div>
+          <div class="mode-tab tb"        onclick="setMode('b','monthly',this)">월별</div>
+          <div class="mode-tab tb"        onclick="setMode('b','quarterly',this)">분기별</div>
+          <div class="mode-tab tb"        onclick="setMode('b','custom',this)">기간설정</div>
+        </div>
+      </div>
+      <div class="controls">
+        <div id="b-ctrl-range" class="period-panel active">
+          <div class="ctrl-group"><label>시작일</label><input type="date" id="b-range-start"></div>
+          <div class="ctrl-group"><label>종료일</label><input type="date" id="b-range-end"></div>
+        </div>
+        <div id="b-ctrl-custom" class="period-panel">
+          <div class="ctrl-group"><label>시작일</label><input type="date" id="b-custom-start"></div>
+          <div class="ctrl-group"><label>종료일</label><input type="date" id="b-custom-end"></div>
+        </div>
+        <div class="ctrl-group">
+          <label>팀 필터</label>
+          <select id="b-team-select"><option value="ALL">전체 팀</option></select>
+        </div>
+        <button class="btn btn-b" onclick="runPage('b')">🔍 분석 실행</button>
+        <button class="btn btn-secondary" onclick="exportPage('b')">⬇ CSV</button>
+      </div>
+      <div class="filter-pills" id="b-pills"></div>
+      <div class="kpi-grid" id="b-kpi"><div class="empty-state" style="grid-column:1/-1;padding:14px"><p>분석 실행 후 KPI가 표시됩니다.</p></div></div>
+      <div class="viz-grid" id="b-charts" style="display:none">
+        <div class="card"><div class="card-header"><div class="card-title">📉 팀원별 이탈률</div></div><canvas id="b-chart-churn"></canvas></div>
+        <div class="card"><div class="card-header"><div class="card-title">📊 팀원별 연장률</div></div><canvas id="b-chart-extend"></canvas></div>
+        <div class="card"><div class="card-header"><div class="card-title">🏃 팀원별 개강 vs 이탈</div></div><canvas id="b-chart-open"></canvas></div>
+        <div class="card"><div class="card-header"><div class="card-title">📦 팀원별 기초PT</div></div><canvas id="b-chart-basic"></canvas></div>
+      </div>
+      <div class="card full">
+        <div class="card-header"><div class="card-title">📋 상세 지표 테이블</div><span id="b-row-count" style="font-size:11px;color:var(--text-muted)"></span></div>
+        <div class="table-wrap" id="b-table"><div class="empty-state"><div class="empty-icon">🔍</div><p>분석 실행을 누르세요.</p></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════
+const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/jaehyun-pt/math_KPI/main/data/metrics_raw.csv';
+
+// ════════════════════════════════════
+//  STATE
+// ════════════════════════════════════
+let rawData = [];
+let dataSource = ''; // 'github' | 'manual'
+const state = {
+  a:{ mode:'weekly', activeFilters:new Set(['ALL']), lastResult:[], charts:{} },
+  b:{ mode:'weekly', activeFilters:new Set(['ALL']), lastResult:[], charts:{} }
+};
+
+// ════════════════════════════════════
+//  AUTO LOAD FROM GITHUB
+// ════════════════════════════════════
+async function loadFromGitHub() {
+  setStatus('loading', '⏳ GitHub에서 데이터 로딩 중…');
+  setBanner('a', 'loading', '⏳ GitHub에서 최신 데이터를 불러오는 중입니다…');
+  setBanner('b', 'loading', '⏳ GitHub에서 최신 데이터를 불러오는 중입니다…');
+  setGithubPageStatus('loading', '⏳ GitHub에서 CSV를 불러오는 중…');
+  try {
+    // cache-bust로 항상 최신 파일 fetch
+    const res = await fetch(GITHUB_RAW_URL + '?t=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    processCSVText(text, 'github');
+    const now = new Date().toLocaleString('ko');
+    setStatus('ok', `GitHub · ${now} 자동 로드됨`);
+    setBanner('a', 'ok', `✅ GitHub 최신 데이터 자동 로드 완료 · ${now}`);
+    setBanner('b', 'ok', `✅ GitHub 최신 데이터 자동 로드 완료 · ${now}`);
+    setGithubPageStatus('ok', `✅ 로드 완료 · ${rawData.length.toLocaleString()}행 · ${now}`);
+  } catch(e) {
+    setStatus('err', `GitHub 로드 실패 · 수동 업로드를 이용하세요`);
+    setBanner('a', 'err', `❌ GitHub 자동 로드 실패 (${e.message}) · 사이드바 > 수동 업로드를 이용하세요`);
+    setBanner('b', 'err', `❌ GitHub 자동 로드 실패 (${e.message}) · 사이드바 > 수동 업로드를 이용하세요`);
+    setGithubPageStatus('err', `❌ 로드 실패: ${e.message}`);
+  }
+}
+
+function setStatus(type, text) {
+  document.getElementById('statusDot').className = 'dot ' + type;
+  document.getElementById('statusText').textContent = text;
+}
+function setBanner(pg, type, text) {
+  const el = document.getElementById(`${pg}-load-banner`);
+  el.innerHTML = `<div class="load-banner ${type}">${text}</div>`;
+}
+function setGithubPageStatus(type, text) {
+  const el = document.getElementById('githubLoadStatus');
+  if(el) el.innerHTML = `<div class="load-banner ${type}" style="margin:0">${text}</div>`;
+}
+
+// ════════════════════════════════════
+//  FILE UPLOAD (수동)
+// ════════════════════════════════════
+const uploadArea = document.getElementById('uploadArea');
+uploadArea.addEventListener('dragover', e=>{e.preventDefault();uploadArea.classList.add('drag');});
+uploadArea.addEventListener('dragleave', ()=>uploadArea.classList.remove('drag'));
+uploadArea.addEventListener('drop', e=>{e.preventDefault();uploadArea.classList.remove('drag');if(e.dataTransfer.files[0])parseCSV(e.dataTransfer.files[0]);});
+function handleFile(e){if(e.target.files[0])parseCSV(e.target.files[0]);}
+function parseCSV(file){
+  const r=new FileReader();
+  r.onload=ev=>{
+    processCSVText(ev.target.result,'manual');
+    const now=new Date().toLocaleString('ko');
+    setStatus('ok',`${file.name} · 수동 업로드 · ${now}`);
+    setBanner('a','manual',`📁 수동 업로드 데이터 사용 중 · ${file.name} · ${rawData.length.toLocaleString()}행`);
+    setBanner('b','manual',`📁 수동 업로드 데이터 사용 중 · ${file.name} · ${rawData.length.toLocaleString()}행`);
+  };
+  r.readAsText(file,'UTF-8');
+}
+
+function processCSVText(text, source) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+  rawData = lines.slice(1).map(line=>{
+    const vals=splitLine(line);
+    const row={};
+    headers.forEach((h,i)=>row[h]=(vals[i]??'').trim().replace(/^"|"$/g,''));
+    return row;
+  }).filter(r=>Object.values(r).some(v=>v!==''));
+  dataSource = source;
+  buildFilters();
+}
+
+function splitLine(line){
+  const r=[];let c='';let q=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){q=!q;}
+    else if(line[i]===','&&!q){r.push(c);c='';}
+    else c+=line[i];
+  }
+  r.push(c);return r;
+}
+
+// ════════════════════════════════════
+//  NAV
+// ════════════════════════════════════
+function switchPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const map={'page-a':0,'page-b':1,'page-upload':2};
+  document.querySelectorAll('.nav-item')[map[id]]?.classList.add('active');
+}
+function setMode(pg,mode,el){
+  state[pg].mode=mode;
+  el.closest('.mode-tabs').querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`${pg}-ctrl-range`).classList.toggle('active',mode!=='custom');
+  document.getElementById(`${pg}-ctrl-custom`).classList.toggle('active',mode==='custom');
+  if(rawData.length) runPage(pg);
+}
+
+// ════════════════════════════════════
+//  FILTERS
+// ════════════════════════════════════
+function buildFilters(){
+  const teams=[...new Set(rawData.map(r=>r['담당부서']).filter(Boolean))].sort();
+  const pa=document.getElementById('a-pills');
+  pa.innerHTML='';
+  pa.appendChild(mkPill('전체','ALL',true,'a'));
+  teams.forEach(t=>pa.appendChild(mkPill(t,t,false,'a')));
+  state.a.activeFilters=new Set(['ALL']);
+
+  const managers=[...new Set(rawData.map(r=>r['선생님']||r['manager_name']).filter(Boolean))].sort();
+  const pb=document.getElementById('b-pills');
+  pb.innerHTML='';
+  pb.appendChild(mkPill('전체','ALL',true,'b'));
+  managers.forEach(m=>pb.appendChild(mkPill(m,m,false,'b')));
+  state.b.activeFilters=new Set(['ALL']);
+
+  const sel=document.getElementById('b-team-select');
+  sel.innerHTML='<option value="ALL">전체 팀</option>';
+  teams.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+  sel.onchange=()=>{if(rawData.length)runPage('b');};
+}
+
+function mkPill(label,value,active,pg){
+  const el=document.createElement('div');
+  el.className='pill'+(active?' active':'')+(pg==='b'?' gb':'');
+  el.textContent=label;
+  el.onclick=()=>toggleFilter(pg,value,el);
+  return el;
+}
+function toggleFilter(pg,value,el){
+  const st=state[pg];
+  if(value==='ALL'){
+    st.activeFilters=new Set(['ALL']);
+    document.querySelectorAll(`#${pg}-pills .pill`).forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    st.activeFilters.delete('ALL');
+    document.querySelector(`#${pg}-pills .pill`).classList.remove('active');
+    if(st.activeFilters.has(value)){st.activeFilters.delete(value);el.classList.remove('active');}
+    else{st.activeFilters.add(value);el.classList.add('active');}
+    if(st.activeFilters.size===0){st.activeFilters=new Set(['ALL']);document.querySelector(`#${pg}-pills .pill`).classList.add('active');}
+  }
+  if(rawData.length)runPage(pg);
+}
+
+// ════════════════════════════════════
+//  DATE HELPERS
+// ════════════════════════════════════
+function pd(s){if(!s)return null;const d=new Date(s.replace(' ','T').replace(/(\d{4}-\d{2}-\d{2})$/,'$1T00:00:00'));return isNaN(d)?null:d;}
+function ds(d){return d?d.toISOString().slice(0,10):'';}
+function ad(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function getMonday(d){const day=d.getDay(),diff=day===0?-6:1-day;return new Date(d.getFullYear(),d.getMonth(),d.getDate()+diff);}
+function weekLabel(ws){const m=ad(ws,3);return `${String(m.getFullYear()).slice(2)}년 ${m.getMonth()+1}월 ${Math.floor((m.getDate()-1)/7)+1}주차`;}
+function monthKey(ws){const m=ad(ws,3);return `${String(m.getFullYear()).slice(2)}년 ${m.getMonth()+1}월`;}
+function quarterKey(d){return `${d.getFullYear()}년 Q${Math.ceil((d.getMonth()+1)/3)}`;}
+function weeksInRange(s,e){const w=[];let c=getMonday(s);while(c<=e){w.push(new Date(c));c=ad(c,7);}return w;}
+
+// ════════════════════════════════════
+//  CORE METRICS
+// ════════════════════════════════════
+function prepRows(rows){
+  return rows.map(r=>({...r,
+    _sid:r['mildang_id']||r['학생이름'],
+    _mgr:r['선생님']||r['manager_name']||'',
+    _team:r['담당부서']||'',
+    _eff:pd(r['권한시작일']),_exp:pd(r['실제권한종료일']),_calc:pd(r['계산일']),
+    _calc_str:ds(pd(r['계산일'])),
+    _is_renewal:r['신규/재연장']==='재연장'||r['신규/재연장']==='1'||Number(r['신규/재연장'])===1,
+    _amt:parseFloat(r['결제금액'])||0,_cancel:parseFloat(r['환불금액'])||0,
+    _status:r['계약상태']||''
+  }));
+}
+
+function calcMetrics(contracts,weekStart){
+  const we=ad(weekStart,6),pf=ad(weekStart,-3);
+  const CHURN=new Set(['환불','미연장','연장완료','전환_미연장','전환_환불','환불대기','관리진행']);
+  const LEAVE=new Set(['미연장','환불','환불대기']);
+  const calcBySid={};
+  contracts.forEach(c=>{if(!calcBySid[c._sid])calcBySid[c._sid]=new Set();if(c._calc_str)calcBySid[c._sid].add(c._calc_str);});
+  let basic=0,churn=0,mr=0,nr=0,open=0,fr=0,cd=0,ce=0,cr=0,cn=0;
+  contracts.forEach(c=>{
+    const{_status:st,_eff:eff,_exp:exp,_calc:calc,_is_renewal:isRen,_amt:amt,_cancel:cancel,_sid:sid}=c;
+    if(CHURN.has(st)&&eff&&exp&&eff<=pf&&exp>=pf) basic++;
+    if(LEAVE.has(st)&&exp&&exp>=weekStart&&exp<=we){churn++;if(st==='환불'||st==='환불대기')mr++;if(st==='미연장')nr++;}
+    if(!isRen&&eff&&eff>=weekStart&&eff<=we){
+      const prevDay=ds(ad(eff,-1));
+      if(!(calcBySid[sid]||new Set()).has(prevDay)){open++;if((st==='환불'||st==='환불대기')&&amt>0&&amt===cancel)fr++;}
+    }
+    if(calc&&calc>=weekStart&&calc<=we&&CHURN.has(st)){cd++;if(st==='연장완료'||st==='전환_미연장'||st==='전환_환불')ce++;if(st==='환불'||st==='환불대기')cr++;if(st==='미연장')cn++;}
+  });
+  const pct=(a,b)=>b>0?Math.round(a/b*10000)/100:null;
+  return{basic_pt:basic,churn_pt:churn,mid_refund_pt:mr,nonrenew_pt:nr,churn_rate:pct(churn,basic),open_pt:open,new_full_churn_pt:fr,new_full_churn_rate:pct(fr,open),calc_due_pt:cd,calc_extend_pt:ce,calc_refund_pt:cr,calc_nonrenew_pt:cn,renew_rate:pct(ce,cd),extend_rate:pct(ce,ce+cn)};
+}
+
+function aggWeeks(contracts,weeks){
+  let b=0,ch=0,mr=0,nr=0,op=0,fr=0,cd=0,ce=0,cr=0,cn=0;
+  weeks.forEach(ws=>{const m=calcMetrics(contracts,ws);b+=m.basic_pt;ch+=m.churn_pt;mr+=m.mid_refund_pt;nr+=m.nonrenew_pt;op+=m.open_pt;fr+=m.new_full_churn_pt;cd+=m.calc_due_pt;ce+=m.calc_extend_pt;cr+=m.calc_refund_pt;cn+=m.calc_nonrenew_pt;});
+  const pct=(a,b)=>b>0?Math.round(a/b*10000)/100:null;
+  return{basic_pt:b,churn_pt:ch,mid_refund_pt:mr,nonrenew_pt:nr,churn_rate:pct(ch,b),open_pt:op,new_full_churn_pt:fr,new_full_churn_rate:pct(fr,op),calc_due_pt:cd,calc_extend_pt:ce,calc_refund_pt:cr,calc_nonrenew_pt:cn,renew_rate:pct(ce,cd),extend_rate:pct(ce,ce+cn)};
+}
+
+// ════════════════════════════════════
+//  RUN
+// ════════════════════════════════════
+function runPage(pg){
+  if(!rawData.length){alert('데이터가 없습니다. GitHub 자동 로드를 기다리거나 수동 업로드하세요.');return;}
+  const st=state[pg];
+  const isC=st.mode==='custom';
+  const start=pd(document.getElementById(`${pg}-${isC?'custom':'range'}-start`).value);
+  const end=pd(document.getElementById(`${pg}-${isC?'custom':'range'}-end`).value);
+  if(!start||!end){alert('날짜를 입력하세요.');return;}
+  const contracts=prepRows(rawData);
+  const weeks=weeksInRange(start,end);
+  const rows=pg==='a'?buildRowsA(contracts,weeks,start,end,st):buildRowsB(contracts,weeks,start,end,st);
+  st.lastResult=rows;
+  renderKPI(pg,rows);renderTable(pg,rows);renderCharts(pg,rows);
+}
+
+function buildRowsA(contracts,weeks,start,end,st){
+  const filterAll=st.activeFilters.has('ALL');
+  const filtered=filterAll?contracts:contracts.filter(c=>st.activeFilters.has(c._team));
+  const teams=[...new Set(filtered.map(c=>c._team).filter(Boolean))].sort();
+  return buildRows(filtered,weeks,start,end,st.mode,teams,'team','수학본부 종합');
+}
+
+function buildRowsB(contracts,weeks,start,end,st){
+  const teamSel=document.getElementById('b-team-select').value;
+  let filtered=teamSel==='ALL'?contracts:contracts.filter(c=>c._team===teamSel);
+  const filterAll=st.activeFilters.has('ALL');
+  if(!filterAll) filtered=filtered.filter(c=>st.activeFilters.has(c._mgr));
+  filtered=filtered.map(c=>({...c,_mgr:c._mgr||(c._team?c._team+' 퇴사자 외':'퇴사자 외')}));
+  const managers=[...new Set(filtered.map(c=>c._mgr).filter(Boolean))].sort((a,b)=>{
+    if(a.includes('퇴사자'))return 1;if(b.includes('퇴사자'))return -1;return a.localeCompare(b,'ko');
+  });
+  return buildRows(filtered,weeks,start,end,st.mode,managers,'manager','수학본부 종합');
+}
+
+function buildRows(contracts,weeks,start,end,mode,groups,groupKey,summaryLabel){
+  const rows=[];
+  const gc=g=>contracts.filter(c=>groupKey==='team'?c._team===g:c._mgr===g);
+  const addSummary=(period,extra,wsList)=>{rows.push({_period:period,...extra,_group:summaryLabel,_summary:true,...aggWeeks(contracts,wsList)});};
+  if(mode==='weekly'){
+    weeks.forEach(ws=>{
+      const label=weekLabel(ws),mKey=monthKey(ws),qKey=quarterKey(ws);
+      groups.forEach(g=>{rows.push({_period:label,_month:mKey,_quarter:qKey,_group:g,_retired:g.includes('퇴사자'),...calcMetrics(gc(g),ws)});});
+      addSummary(label,{_month:mKey,_quarter:qKey},[ws]);
+    });
+  } else if(mode==='monthly'){
+    const map={};weeks.forEach(ws=>{const k=monthKey(ws);if(!map[k])map[k]=[];map[k].push(ws);});
+    Object.entries(map).forEach(([mKey,wsList])=>{
+      const qKey=quarterKey(wsList[0]);
+      groups.forEach(g=>{rows.push({_period:mKey,_quarter:qKey,_group:g,_retired:g.includes('퇴사자'),...aggWeeks(gc(g),wsList)});});
+      addSummary(mKey,{_quarter:qKey},wsList);
+    });
+  } else if(mode==='quarterly'){
+    const map={};weeks.forEach(ws=>{const k=quarterKey(ws);if(!map[k])map[k]=[];map[k].push(ws);});
+    Object.entries(map).forEach(([qKey,wsList])=>{
+      groups.forEach(g=>{rows.push({_period:qKey,_group:g,_retired:g.includes('퇴사자'),...aggWeeks(gc(g),wsList)});});
+      addSummary(qKey,{},wsList);
+    });
+  } else {
+    const label=`${ds(start)} ~ ${ds(end)}`;
+    groups.forEach(g=>{rows.push({_period:label,_group:g,_retired:g.includes('퇴사자'),...aggWeeks(gc(g),weeks)});});
+    addSummary(label,{},weeks);
+  }
+  return rows;
+}
+
+// ════════════════════════════════════
+//  KPI
+// ════════════════════════════════════
+function renderKPI(pg,rows){
+  const s=rows.filter(r=>r._summary);if(!s.length)return;
+  const l=s[s.length-1];
+  const defs=[
+    {label:'기초PT',       val:l.basic_pt,                color:'c-blue',  sub:'재적 인원'},
+    {label:'이탈PT',        val:l.churn_pt,                color:'c-red',   sub:'미연장+환불+환불대기'},
+    {label:'이탈률',         val:fp(l.churn_rate),          color:'c-red',   sub:'이탈/기초PT'},
+    {label:'개강PT',        val:l.open_pt,                 color:'c-green', sub:'신규 개강'},
+    {label:'신규전액환불PT', val:l.new_full_churn_pt,       color:'c-orange',sub:'개강 즉시 전액환불'},
+    {label:'신규전액환불률', val:fp(l.new_full_churn_rate), color:'c-orange',sub:'신규전액/개강PT'},
+    {label:'계산일 도래PT', val:l.calc_due_pt,             color:'c-purple',sub:'계산일 기준'},
+    {label:'재수강률',       val:fp(l.renew_rate),          color:'c-green', sub:'연장/계산일도래'},
+    {label:'연장률',         val:fp(l.extend_rate),         color:'c-green', sub:'연장/(연장+미연장)'},
+  ];
+  document.getElementById(`${pg}-kpi`).innerHTML=defs.map(k=>`<div class="kpi-card ${k.color}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.val??'—'}</div><div class="kpi-sub">${k.sub}</div></div>`).join('');
+}
+function fp(v){return v!==null&&v!==undefined?v+'%':null;}
+function fn(v){return v!==null&&v!==undefined?Number(v).toLocaleString():'—';}
+function fpp(v){return v!==null&&v!==undefined?v+'%':'—';}
+
+// ════════════════════════════════════
+//  TABLE
+// ════════════════════════════════════
+function renderTable(pg,rows){
+  const isB=pg==='b';
+  const cols=[
+    {k:'_group',l:isB?'팀원':'팀',txt:true},
+    {k:'_period',l:'기간',txt:true},
+    {k:'basic_pt',l:'기초PT'},{k:'churn_pt',l:'이탈PT'},{k:'mid_refund_pt',l:'중도환불PT'},{k:'nonrenew_pt',l:'미연장PT'},
+    {k:'churn_rate',l:'이탈률(%)',pct:true,bad:true},
+    {k:'open_pt',l:'개강PT'},{k:'new_full_churn_pt',l:'신규전액이탈PT'},
+    {k:'new_full_churn_rate',l:'신규전액환불률(%)',pct:true,bad:true},
+    {k:'calc_due_pt',l:'계산일_도래PT'},{k:'calc_extend_pt',l:'계산일_연장PT'},{k:'calc_refund_pt',l:'계산일_환불PT'},{k:'calc_nonrenew_pt',l:'계산일_미연장PT'},
+    {k:'renew_rate',l:'재수강률(%)',pct:true,good:true},{k:'extend_rate',l:'연장률(%)',pct:true,good:true},
+  ];
+  let h='<table><thead><tr>'+cols.map(c=>`<th${c.txt?' class="txt"':''}>${c.l}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const cls=r._summary?' class="row-summary"':r._retired?' class="row-retired"':'';
+    h+=`<tr${cls}>`+cols.map(c=>{
+      const v=r[c.k];
+      if(c.txt)return`<td class="txt">${v??'—'}</td>`;
+      if(c.pct){const cl=c.good&&v>=70?'pct-good':c.bad&&v!==null&&v>30?'pct-bad':'';return`<td class="${cl}">${fpp(v)}</td>`;}
+      return`<td>${fn(v)}</td>`;
+    }).join('')+'</tr>';
+  });
+  document.getElementById(`${pg}-table`).innerHTML=h+'</tbody></table>';
+  document.getElementById(`${pg}-row-count`).textContent=`${rows.length}행`;
+}
+
+// ════════════════════════════════════
+//  CHARTS
+// ════════════════════════════════════
+function renderCharts(pg,rows){
+  document.getElementById(`${pg}-charts`).style.display='grid';
+  const s=rows.filter(r=>r._summary);
+  const labels=s.map(r=>r._period);
+  const st=state[pg];
+  ['churn','renew','open','basic','extend'].forEach(k=>{if(st.charts[k]){st.charts[k].destroy();delete st.charts[k];}});
+  if(pg==='a'){
+    st.charts.churn =mkLine('a-chart-churn', labels,[{label:'이탈률(%)',   data:s.map(r=>r.churn_rate),  bc:'#f75f5f',bg:'rgba(247,95,95,.1)'}]);
+    st.charts.renew =mkLine('a-chart-renew', labels,[{label:'재수강률(%)',data:s.map(r=>r.renew_rate),  bc:'#34d39a',bg:'rgba(52,211,154,.1)'},{label:'연장률(%)',data:s.map(r=>r.extend_rate),bc:'#4f8ef7',bg:'rgba(79,142,247,.1)'}]);
+    st.charts.open  =mkBar ('a-chart-open',  labels,[{label:'개강PT',data:s.map(r=>r.open_pt),backgroundColor:'rgba(52,211,154,.7)'},{label:'이탈PT',data:s.map(r=>r.churn_pt),backgroundColor:'rgba(247,95,95,.7)'}]);
+    st.charts.basic =mkLine('a-chart-basic', labels,[{label:'기초PT',     data:s.map(r=>r.basic_pt),    bc:'#4f8ef7',bg:'rgba(79,142,247,.1)'}]);
+  } else {
+    const lp=rows.length?rows[rows.length-1]._period:null;
+    const lr=rows.filter(r=>r._period===lp&&!r._summary);
+    const bl=lr.map(r=>r._group);
+    st.charts.churn =mkBar('b-chart-churn', bl,[{label:'이탈률(%)',data:lr.map(r=>r.churn_rate),backgroundColor:lr.map(_=>'rgba(247,95,95,.7)')}]);
+    st.charts.extend=mkBar('b-chart-extend',bl,[{label:'연장률(%)',data:lr.map(r=>r.extend_rate),backgroundColor:lr.map(_=>'rgba(52,211,154,.7)')}]);
+    st.charts.open  =mkBar('b-chart-open',  bl,[{label:'개강PT',data:lr.map(r=>r.open_pt),backgroundColor:'rgba(52,211,154,.7)'},{label:'이탈PT',data:lr.map(r=>r.churn_pt),backgroundColor:'rgba(247,95,95,.7)'}]);
+    st.charts.basic =mkBar('b-chart-basic', bl,[{label:'기초PT',data:lr.map(r=>r.basic_pt),backgroundColor:lr.map(_=>'rgba(79,142,247,.7)')}]);
+  }
+}
+function mkLine(id,labels,datasets){return new Chart(document.getElementById(id).getContext('2d'),{type:'line',data:{labels,datasets:datasets.map(d=>({label:d.label,data:d.data,borderColor:d.bc,backgroundColor:d.bg,fill:true,tension:.4,pointRadius:3,pointBackgroundColor:d.bc}))},options:baseOpts()});}
+function mkBar(id,labels,datasets){return new Chart(document.getElementById(id).getContext('2d'),{type:'bar',data:{labels,datasets:datasets.map(d=>({...d,borderRadius:4}))},options:baseOpts()});}
+function baseOpts(){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#6b7390',font:{family:'Noto Sans KR',size:11}}}},scales:{x:{ticks:{color:'#6b7390',font:{size:10},maxRotation:45},grid:{color:'rgba(42,47,62,.5)'}},y:{ticks:{color:'#6b7390',font:{size:10}},grid:{color:'rgba(42,47,62,.5)'}}}};}
+
+// ════════════════════════════════════
+//  EXPORT
+// ════════════════════════════════════
+function exportPage(pg){
+  const rows=state[pg].lastResult;
+  if(!rows.length){alert('먼저 분석을 실행하세요.');return;}
+  const isB=pg==='b';
+  const cols=['_group','_period','basic_pt','churn_pt','mid_refund_pt','nonrenew_pt','churn_rate','open_pt','new_full_churn_pt','new_full_churn_rate','calc_due_pt','calc_extend_pt','calc_refund_pt','calc_nonrenew_pt','renew_rate','extend_rate'];
+  const hdrs=[isB?'팀원':'팀','기간','기초PT','이탈PT','중도환불PT','미연장PT','이탈률(%)','개강PT','신규전액이탈PT','신규전액환불률(%)','계산일_도래PT','계산일_연장PT','계산일_환불PT','계산일_미연장PT','재수강률(%)','연장률(%)'];
+  const csv=[hdrs.join(','),...rows.map(r=>cols.map(c=>`"${r[c]??''}"`).join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`성과지표_기준${pg.toUpperCase()}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ════════════════════════════════════
+//  INIT
+// ════════════════════════════════════
+(function(){
+  const today=new Date(),y1=new Date(today);
+  y1.setFullYear(y1.getFullYear()-1);
+  ['a','b'].forEach(pg=>{
+    document.getElementById(`${pg}-range-end`).value=ds(today);
+    document.getElementById(`${pg}-range-start`).value=ds(y1);
+    document.getElementById(`${pg}-custom-end`).value=ds(today);
+    document.getElementById(`${pg}-custom-start`).value=ds(y1);
+  });
+  // 페이지 열리면 GitHub에서 자동 로드
+  loadFromGitHub();
+})();
+</script>
+</body>
+</html>
