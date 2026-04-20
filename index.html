@@ -8,28 +8,28 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
   :root{
-    --bg:#f5f6fa; --surface:#ffffff; --surface2:#f0f2f7; --border:#e2e6ef;
+    --bg:#f4f6fb; --surface:#ffffff; --surface2:#f0f2f8; --border:#e3e7f0;
     --accent:#3b6ef0; --accent2:#10b97a; --accent3:#f08030; --danger:#e03030;
-    --text:#1a1d2e; --text-muted:#7a82a0; --text-light:#b0b8cc;
+    --text:#1a1d2e; --text-muted:#7a82a0; --text-light:#b0bace;
     --shadow:0 1px 4px rgba(30,40,80,.08);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;font-size:14px;}
 
-  /* Header */
+  /* ── Header ── */
   header{padding:0 24px;height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface);box-shadow:var(--shadow);position:sticky;top:0;z-index:100;}
   .logo-mark{width:30px;height:30px;background:var(--accent);border-radius:7px;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
   header h1{font-size:14px;font-weight:600;letter-spacing:-.2px;}
   .data-status{margin-left:auto;font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--text-light);flex-shrink:0;transition:background .3s;}
-  .dot.ok{background:var(--accent2);}
-  .dot.loading{background:var(--accent3);animation:pulse 1s infinite;}
-  .dot.err{background:var(--danger);}
+  .dot.ok{background:var(--accent2);} .dot.loading{background:var(--accent3);animation:pulse 1s infinite;} .dot.err{background:var(--danger);}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .btn-hdr{padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+  .btn-hdr:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* Layout */
+  /* ── Layout ── */
   .layout{display:flex;flex:1;overflow:hidden;}
-  aside{width:188px;background:var(--surface);border-right:1px solid var(--border);padding:14px 10px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+  aside{width:192px;background:var(--surface);border-right:1px solid var(--border);padding:14px 10px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
   .nav-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-light);text-transform:uppercase;padding:6px 10px 4px;}
   .nav-item{padding:8px 11px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text-muted);transition:all .15s;display:flex;align-items:center;gap:8px;}
   .nav-item:hover{background:var(--surface2);color:var(--text);}
@@ -38,44 +38,52 @@
   main{flex:1;padding:20px 24px;overflow-y:auto;}
   .page{display:none;}.page.active{display:block;}
 
-  /* Banner */
+  /* ── Banner ── */
   .banner{display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:7px;font-size:12px;margin-bottom:14px;border:1px solid;}
   .banner.loading{background:#fff8f0;border-color:#f8d0a0;color:var(--accent3);}
   .banner.ok{background:#f0faf6;border-color:#a0e0c0;color:#0a8a5a;}
   .banner.err{background:#fff0f0;border-color:#f0b0b0;color:var(--danger);}
   .banner.manual{background:#f0f4ff;border-color:#b0c4f8;color:var(--accent);}
 
-  /* Section */
-  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
-  .section-title{font-size:15px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:8px;}
-  .section-title .bar{display:inline-block;width:4px;height:15px;border-radius:2px;}
+  /* ── Sub tabs ── */
+  .sub-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;}
+  .sub-tab{padding:9px 20px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+  .sub-tab:hover{color:var(--text);}
+  .sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700;}
 
-  /* Controls */
+  /* ── Section title ── */
+  .sec-title{font-size:15px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+  .sec-bar{display:inline-block;width:4px;height:15px;border-radius:2px;}
+
+  /* ── Controls ── */
   .controls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;background:var(--surface);border-radius:9px;border:1px solid var(--border);box-shadow:var(--shadow);}
   .ctrl-group{display:flex;flex-direction:column;gap:4px;}
   .ctrl-group label{font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
-  .ctrl-group select,.ctrl-group input[type="date"]{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color .15s;cursor:pointer;}
-  .ctrl-group select:focus,.ctrl-group input[type="date"]:focus{border-color:var(--accent);}
+  .ctrl-group select{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color .15s;cursor:pointer;}
+  .ctrl-group select:focus{border-color:var(--accent);}
   .btn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;font-weight:600;transition:all .15s;}
   .btn-a{background:var(--accent);color:#fff;}.btn-a:hover{background:#2a5de0;}
-  .btn-b{background:var(--accent2);color:#fff;}.btn-b:hover{background:#0da06a;}
   .btn-sec{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}.btn-sec:hover{border-color:var(--accent);color:var(--accent);}
   .btn-sm{padding:5px 10px;font-size:11px;}
 
-  /* KPI */
+  /* ── Period strip ── */
+  .pstrip{display:none;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:7px;font-size:11px;color:var(--text-muted);margin-bottom:14px;flex-wrap:wrap;}
+  .pstrip.show{display:flex;}
+  .pstrip strong{color:var(--text);font-weight:600;}
+  .pstrip .sep{color:var(--border);}
+
+  /* ── KPI ── */
   .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px;margin-bottom:16px;}
   .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 14px;position:relative;overflow:hidden;box-shadow:var(--shadow);}
   .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-  .kpi-card.cb::before{background:var(--accent);}
-  .kpi-card.cg::before{background:var(--accent2);}
-  .kpi-card.co::before{background:var(--accent3);}
-  .kpi-card.cr::before{background:var(--danger);}
+  .kpi-card.cb::before{background:var(--accent);} .kpi-card.cg::before{background:var(--accent2);}
+  .kpi-card.co::before{background:var(--accent3);} .kpi-card.cr::before{background:var(--danger);}
   .kpi-card.cp::before{background:#8b5cf6;}
   .kpi-label{font-size:10px;color:var(--text-muted);margin-bottom:4px;font-weight:600;}
   .kpi-value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;letter-spacing:-1px;color:var(--text);}
   .kpi-sub{font-size:10px;color:var(--text-light);margin-top:3px;}
 
-  /* Card */
+  /* ── Card ── */
   .card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:15px;box-shadow:var(--shadow);margin-bottom:14px;}
   .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
   .card-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
@@ -83,8 +91,8 @@
   @media(max-width:860px){.grid2{grid-template-columns:1fr;}}
   canvas{max-height:200px;}
 
-  /* Table */
-  .table-wrap{overflow-x:auto;max-height:460px;overflow-y:auto;}
+  /* ── Table ── */
+  .table-wrap{overflow-x:auto;max-height:480px;overflow-y:auto;}
   table{width:100%;border-collapse:collapse;font-size:12px;}
   thead{position:sticky;top:0;z-index:2;}
   thead th{text-align:right;padding:8px 10px;font-size:10px;font-weight:700;color:var(--text-muted);border-bottom:2px solid var(--border);background:var(--surface);white-space:nowrap;text-transform:uppercase;letter-spacing:.3px;}
@@ -94,182 +102,254 @@
   tbody td.l{font-family:'Noto Sans KR',sans-serif;font-size:12px;text-align:left;}
   tbody tr.row-sum td{background:rgba(59,110,240,.05);font-weight:700;color:var(--accent);}
   tbody tr.row-ret td{color:var(--text-light);}
-  .pg{color:var(--accent2);font-weight:600;}.pb{color:var(--danger);font-weight:600;}
+  .pg{color:var(--accent2);font-weight:600;} .pb{color:var(--danger);font-weight:600;}
 
-  /* Rank table */
-  .rank-table tbody td{vertical-align:middle;}
+  /* ── Rank ── */
   .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
-  .rank-1{background:#f0c040;color:#7a5000;}
-  .rank-2{background:#d0d8e8;color:#404860;}
-  .rank-3{background:#e8c0a0;color:#804020;}
-  .rank-n{background:var(--surface2);color:var(--text-muted);}
+  .rank-1{background:#f0c040;color:#7a5000;} .rank-2{background:#d0d8e8;color:#404860;}
+  .rank-3{background:#e8c0a0;color:#804020;} .rank-n{background:var(--surface2);color:var(--text-muted);}
   .rank-bigo{font-size:10px;color:var(--text-light);font-family:'Noto Sans KR',sans-serif;}
 
-  /* Pills */
+  /* ── Pills ── */
   .pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
   .pill{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text-muted);background:var(--surface);transition:all .15s;}
   .pill:hover{border-color:var(--accent);color:var(--accent);}
   .pill.on{background:rgba(59,110,240,.1);border-color:rgba(59,110,240,.3);color:var(--accent);font-weight:600;}
 
-  /* Upload */
+  /* ── Upload ── */
   .upload-area{border:2px dashed var(--border);border-radius:9px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);}
   .upload-area:hover,.upload-area.drag{border-color:var(--accent);background:rgba(59,110,240,.03);}
   .upload-icon{font-size:26px;margin-bottom:7px;opacity:.5;}
   .upload-area p{font-size:12px;color:var(--text-muted);line-height:1.7;}
-  #fileInput{display:none;}
+  input[type="file"]{display:none;}
   .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;}
   .ba{background:rgba(59,110,240,.1);color:var(--accent);}
   .bg2{background:rgba(16,185,122,.1);color:var(--accent2);}
-  .bgr{background:var(--surface2);color:var(--text-muted);}
+  .bgray{background:rgba(120,130,160,.1);color:var(--text-muted);}
+
+  /* ── Empty / Placeholder ── */
   .empty-state{text-align:center;padding:40px;color:var(--text-muted);}
   .empty-icon{font-size:32px;margin-bottom:8px;opacity:.4;}
+  .placeholder-box{border:2px dashed var(--border);border-radius:12px;padding:60px 40px;text-align:center;color:var(--text-muted);}
+  .placeholder-box .ph-icon{font-size:40px;margin-bottom:12px;opacity:.35;}
+  .placeholder-box h3{font-size:16px;font-weight:600;margin-bottom:8px;color:var(--text-light);}
+  .placeholder-box p{font-size:12px;line-height:1.8;}
 
-  /* Period info strip */
-  .period-strip{display:flex;gap:10px;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:7px;font-size:11px;color:var(--text-muted);margin-bottom:14px;flex-wrap:wrap;}
-  .period-strip strong{color:var(--text);font-weight:600;}
-  .period-sep{color:var(--border);}
-
-  /* Divider */
   .divider{height:1px;background:var(--border);margin:18px 0;}
+  .tag{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;background:rgba(59,110,240,.08);color:var(--accent);margin-left:6px;}
 </style>
 </head>
 <body>
+
 <header>
   <div class="logo-mark">수학</div>
   <h1>수학본부 성과지표 대시보드</h1>
   <div class="data-status">
     <div class="dot loading" id="statusDot"></div>
     <span id="statusText">데이터 로딩 중…</span>
-    <button class="btn btn-sec btn-sm" style="margin-left:6px" onclick="loadFromGitHub()">↻</button>
+    <button class="btn-hdr" style="margin-left:4px" onclick="loadAll()">↻</button>
   </div>
 </header>
 
 <div class="layout">
   <aside>
-    <div class="nav-label">성과지표</div>
-    <div class="nav-item active" onclick="switchPage('page-a')"><span>📊</span> 기준 A <span class="badge ba" style="margin-left:auto">팀별</span></div>
-    <div class="nav-item" onclick="switchPage('page-b')"><span>👤</span> 기준 B <span class="badge bg2" style="margin-left:auto">팀원별</span></div>
+    <div class="nav-label">페이지</div>
+    <div class="nav-item active" onclick="switchPage('page-dept')">
+      <span>📊</span> 본부 성과지표
+    </div>
+    <div class="nav-item" onclick="switchPage('page-inv')">
+      <span>📈</span> 투자자용 지표
+    </div>
     <div class="nav-divider"></div>
     <div class="nav-label">데이터</div>
-    <div class="nav-item" onclick="switchPage('page-upload')"><span>📂</span> 업로드</div>
+    <div class="nav-item" onclick="switchPage('page-upload')">
+      <span>📂</span> 업로드
+    </div>
   </aside>
 
   <main>
 
-    <!-- UPLOAD -->
+    <!-- ══════════════════════════════
+         UPLOAD PAGE
+    ══════════════════════════════ -->
     <div id="page-upload" class="page">
-      <div class="section-header"><div class="section-title"><span class="bar" style="background:var(--accent)"></span>데이터 소스</div></div>
+      <div class="sec-title"><span class="sec-bar" style="background:var(--accent)"></span>데이터 소스</div>
       <div class="card">
-        <div class="card-header"><div class="card-title">🔗 GitHub 자동 로드</div><button class="btn btn-a btn-sm" onclick="loadFromGitHub()">↻ 새로고침</button></div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--surface2);padding:8px 12px;border-radius:6px;border:1px solid var(--border);margin-bottom:10px;word-break:break-all;color:var(--text-muted)">
-          https://raw.githubusercontent.com/jaehyun-pt/math_KPI/main/data/metrics_raw.csv
+        <div class="card-header">
+          <div class="card-title">🔗 GitHub 자동 로드</div>
+          <button class="btn btn-a btn-sm" onclick="loadAll()">↻ 새로고침</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--surface2);padding:7px 12px;border-radius:6px;border:1px solid var(--border);color:var(--text-muted);word-break:break-all;">
+            <span style="color:var(--accent);font-weight:600">A</span> · metrics_A.csv&nbsp;&nbsp;<span id="statusA" style="color:var(--text-light)">대기 중</span>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--surface2);padding:7px 12px;border-radius:6px;border:1px solid var(--border);color:var(--text-muted);word-break:break-all;">
+            <span style="color:var(--accent2);font-weight:600">B</span> · metrics_B.csv&nbsp;&nbsp;<span id="statusB" style="color:var(--text-light)">대기 중</span>
+          </div>
         </div>
         <div id="githubStatus"></div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">📁 수동 업로드 (fallback)</div></div>
-        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-          <div class="upload-icon">📁</div>
-          <p>GitHub 로드 실패 시 사용<br><strong>클릭 또는 드래그</strong></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">metrics_A.csv <span class="tag">raw data</span></div>
+            <div class="upload-area" onclick="document.getElementById('fileA').click()">
+              <div class="upload-icon">📊</div>
+              <p>클릭 또는 드래그</p>
+            </div>
+            <input type="file" id="fileA" accept=".csv" onchange="handleFile(event,'A')">
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">metrics_B.csv <span class="tag" style="background:rgba(16,185,122,.1);color:var(--accent2)">팀원 목록</span></div>
+            <div class="upload-area" onclick="document.getElementById('fileB').click()">
+              <div class="upload-icon">👤</div>
+              <p>클릭 또는 드래그</p>
+            </div>
+            <input type="file" id="fileB" accept=".csv" onchange="handleFile(event,'B')">
+          </div>
         </div>
-        <input type="file" id="fileInput" accept=".csv" onchange="handleFile(event)">
       </div>
     </div>
 
-    <!-- PAGE A -->
-    <div id="page-a" class="page active">
-      <div id="a-banner"></div>
-      <div class="section-header">
-        <div class="section-title"><span class="bar" style="background:var(--accent)"></span>기준 A · 팀별 성과지표</div>
+    <!-- ══════════════════════════════
+         본부 성과지표
+    ══════════════════════════════ -->
+    <div id="page-dept" class="page active">
+      <div id="dept-banner"></div>
+      <div class="sec-title"><span class="sec-bar" style="background:var(--accent)"></span>본부 성과지표</div>
+
+      <!-- Sub tabs -->
+      <div class="sub-tabs">
+        <div class="sub-tab active" id="tab-team-btn" onclick="switchSubTab('team')">팀별</div>
+        <div class="sub-tab" id="tab-mgr-btn" onclick="switchSubTab('mgr')">팀원별</div>
       </div>
 
-      <!-- Controls -->
-      <div class="controls">
-        <div class="ctrl-group">
-          <label>주차 선택</label>
-          <select id="a-week-sel" onchange="onWeekChange('a')"><option value="">-- 주차 선택 --</option></select>
+      <!-- ── 팀별 탭 ── -->
+      <div id="tab-team">
+        <div class="controls">
+          <div class="ctrl-group">
+            <label>주차 선택</label>
+            <select id="team-week-sel" onchange="onWeekChange('team')">
+              <option value="">-- 주차 선택 --</option>
+            </select>
+          </div>
+          <div class="ctrl-group">
+            <label>집계 기준</label>
+            <select id="team-mode-sel" onchange="onWeekChange('team')">
+              <option value="weekly">주차 단독</option>
+              <option value="monthly">월 누적</option>
+              <option value="quarterly">분기 누적</option>
+            </select>
+          </div>
+          <button class="btn btn-a" onclick="runTeam()">🔍 분석 실행</button>
+          <button class="btn btn-sec" onclick="exportData('team')">⬇ CSV</button>
         </div>
-        <div class="ctrl-group">
-          <label>집계 기준</label>
-          <select id="a-mode-sel" onchange="onModeChange('a')">
-            <option value="weekly">주차 단독</option>
-            <option value="monthly">월 누적</option>
-            <option value="quarterly">분기 누적</option>
-          </select>
+
+        <div class="pstrip" id="team-pstrip">
+          <span>📅 기준 주차: <strong id="team-ps-week"></strong></span>
+          <span class="sep">|</span>
+          <span>집계: <strong id="team-ps-mode"></strong></span>
+          <span class="sep">|</span>
+          <span>기간: <strong id="team-ps-range"></strong></span>
+          <span class="sep">|</span>
+          <span>분기: <strong id="team-ps-quarter"></strong></span>
         </div>
-        <button class="btn btn-a" onclick="runPage('a')">🔍 분석 실행</button>
-        <button class="btn btn-sec" onclick="exportPage('a')">⬇ CSV</button>
-      </div>
 
-      <!-- Period info -->
-      <div class="period-strip" id="a-period-strip" style="display:none"></div>
+        <div class="pills" id="team-pills"></div>
 
-      <!-- Team pills -->
-      <div class="pills" id="a-pills"></div>
+        <div class="kpi-grid" id="team-kpi">
+          <div class="empty-state" style="grid-column:1/-1;padding:14px"><p>분석 실행 후 표시됩니다.</p></div>
+        </div>
 
-      <!-- KPI -->
-      <div class="kpi-grid" id="a-kpi">
-        <div class="empty-state" style="grid-column:1/-1;padding:14px"><p>분석 실행 후 표시됩니다.</p></div>
-      </div>
+        <!-- 팀별 비교 차트 (전체 팀 선택 시) -->
+        <div id="team-compare-section" style="display:none">
+          <div class="card-header" style="margin-bottom:10px"><div class="card-title">📊 팀별 비교</div></div>
+          <div class="grid2">
+            <div class="card"><div class="card-header"><div class="card-title">이탈률 (%)</div></div><canvas id="cmp-churn"></canvas></div>
+            <div class="card"><div class="card-header"><div class="card-title">재수강률 (%)</div></div><canvas id="cmp-renew"></canvas></div>
+            <div class="card"><div class="card-header"><div class="card-title">연장률 (%)</div></div><canvas id="cmp-extend"></canvas></div>
+            <div class="card"><div class="card-header"><div class="card-title">기초PT</div></div><canvas id="cmp-basic"></canvas></div>
+          </div>
+        </div>
 
-      <!-- Team comparison charts (전체 팀 선택 시) -->
-      <div id="a-compare-section" style="display:none">
-        <div class="card-header" style="margin-bottom:10px"><div class="card-title">📊 팀별 비교</div></div>
-        <div class="grid2">
-          <div class="card"><div class="card-header"><div class="card-title">이탈률 (%)</div></div><canvas id="a-cmp-churn"></canvas></div>
-          <div class="card"><div class="card-header"><div class="card-title">연장률 (%)</div></div><canvas id="a-cmp-extend"></canvas></div>
-          <div class="card"><div class="card-header"><div class="card-title">재수강률 (%)</div></div><canvas id="a-cmp-renew"></canvas></div>
-          <div class="card"><div class="card-header"><div class="card-title">기초PT</div></div><canvas id="a-cmp-basic"></canvas></div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 팀별 상세 지표</div>
+            <span id="team-row-count" style="font-size:11px;color:var(--text-muted)"></span>
+          </div>
+          <div class="table-wrap" id="team-table">
+            <div class="empty-state"><div class="empty-icon">🔍</div><p>분석 실행을 누르세요.</p></div>
+          </div>
         </div>
       </div>
 
-      <!-- Table -->
-      <div class="card">
-        <div class="card-header"><div class="card-title">📋 상세 지표 테이블</div><span id="a-row-count" style="font-size:11px;color:var(--text-muted)"></span></div>
-        <div class="table-wrap" id="a-table"><div class="empty-state"><div class="empty-icon">🔍</div><p>분석 실행을 누르세요.</p></div></div>
+      <!-- ── 팀원별 탭 ── -->
+      <div id="tab-mgr" style="display:none">
+        <div class="controls">
+          <div class="ctrl-group">
+            <label>주차 선택</label>
+            <select id="mgr-week-sel" onchange="onWeekChange('mgr')">
+              <option value="">-- 주차 선택 --</option>
+            </select>
+          </div>
+          <div class="ctrl-group">
+            <label>팀 필터</label>
+            <select id="mgr-team-sel" onchange="renderMgr()">
+              <option value="ALL">전체 팀</option>
+            </select>
+          </div>
+          <button class="btn btn-a" onclick="runMgr()">🔍 분석 실행</button>
+          <button class="btn btn-sec" onclick="exportData('mgr')">⬇ CSV</button>
+        </div>
+
+        <div class="pstrip" id="mgr-pstrip">
+          <span>📅 선택 주차: <strong id="mgr-ps-week"></strong></span>
+          <span class="sep">|</span>
+          <span>분기: <strong id="mgr-ps-quarter"></strong></span>
+          <span class="sep">|</span>
+          <span>분기 누적: <strong id="mgr-ps-range"></strong></span>
+        </div>
+
+        <!-- 분기 누적 순위표 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🏆 분기 누적 재수강률 순위</div>
+            <span id="mgr-rank-label" style="font-size:11px;color:var(--text-muted)"></span>
+          </div>
+          <div class="table-wrap" id="mgr-rank-table">
+            <div class="empty-state"><div class="empty-icon">🏆</div><p>분석 실행을 누르세요.</p></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 주차별 raw -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 팀원별 주차 지표 (raw)</div>
+            <span id="mgr-row-count" style="font-size:11px;color:var(--text-muted)"></span>
+          </div>
+          <div class="table-wrap" id="mgr-table">
+            <div class="empty-state"><div class="empty-icon">🔍</div><p>분석 실행을 누르세요.</p></div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- PAGE B -->
-    <div id="page-b" class="page">
-      <div id="b-banner"></div>
-      <div class="section-header">
-        <div class="section-title"><span class="bar" style="background:var(--accent2)"></span>기준 B · 팀원별 성과지표</div>
-      </div>
-
-      <div class="controls">
-        <div class="ctrl-group">
-          <label>주차 선택</label>
-          <select id="b-week-sel" onchange="onWeekChange('b')"><option value="">-- 주차 선택 --</option></select>
-        </div>
-        <div class="ctrl-group">
-          <label>팀 필터</label>
-          <select id="b-team-sel"><option value="ALL">전체 팀</option></select>
-        </div>
-        <button class="btn btn-b" onclick="runPage('b')">🔍 분석 실행</button>
-        <button class="btn btn-sec" onclick="exportPage('b')">⬇ CSV</button>
-      </div>
-
-      <div class="period-strip" id="b-period-strip" style="display:none"></div>
-
-      <!-- 분기 누적 순위표 -->
-      <div class="card" id="b-rank-card">
-        <div class="card-header">
-          <div class="card-title">🏆 분기 누적 재수강률 순위</div>
-          <span id="b-rank-quarter" style="font-size:11px;color:var(--text-muted)"></span>
-        </div>
-        <div class="table-wrap" id="b-rank-table"><div class="empty-state"><div class="empty-icon">🏆</div><p>분석 실행을 누르세요.</p></div></div>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- 주차별 raw 데이터 -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">📋 주차별 성과지표 (raw data)</div>
-          <span id="b-row-count" style="font-size:11px;color:var(--text-muted)"></span>
-        </div>
-        <div class="table-wrap" id="b-table"><div class="empty-state"><div class="empty-icon">🔍</div><p>분석 실행을 누르세요.</p></div></div>
+    <!-- ══════════════════════════════
+         투자자용 성과지표 (placeholder)
+    ══════════════════════════════ -->
+    <div id="page-inv" class="page">
+      <div class="sec-title"><span class="sec-bar" style="background:var(--accent2)"></span>투자자용 성과지표</div>
+      <div class="placeholder-box">
+        <div class="ph-icon">📈</div>
+        <h3>준비 중</h3>
+        <p>
+          동일한 raw data(metrics_A.csv)를 기반으로<br>
+          투자자 관점의 성과지표를 추출할 예정입니다.<br><br>
+          <span style="color:var(--text-light);font-size:11px;">기준 및 계산 로직 확정 후 구현됩니다.</span>
+        </p>
       </div>
     </div>
 
@@ -277,530 +357,496 @@
 </div>
 
 <script>
-const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/jaehyun-pt/math_KPI/main/data/metrics_raw.csv';
+// ════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════
+const URL_A = 'https://raw.githubusercontent.com/jaehyun-pt/math_KPI/main/data/metrics_A.csv';
+const URL_B = 'https://raw.githubusercontent.com/jaehyun-pt/math_KPI/main/data/metrics_B.csv';
 
-// ── STATE ──
-let rawData = [];
-let allWeeks = [];   // [{weekStart, label, monthKey, quarterKey, isoKey}]
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+let csvA = [];        // raw data (지표 계산용)
+let csvB = [];        // 팀원 목록
+let validManagers = new Set(); // metrics_B에서 추출한 유효 팀원
+let allWeeks = [];
 const charts = {};
 const state = {
-  a:{ activeTeams: new Set(['ALL']), lastResult:[], lastTeamRows:[] },
-  b:{ lastResult:[], lastWeekRows:[] }
+  team: { activeTeams: new Set(['ALL']), lastResult: [] },
+  mgr:  { lastRankRows: [], lastWeekRows: [] }
 };
 
-// ════════════════════════════════
-//  GITHUB LOAD
-// ════════════════════════════════
-async function loadFromGitHub() {
-  setSt('loading','⏳ GitHub에서 데이터 로딩 중…');
-  setBanner('a','loading','⏳ GitHub에서 최신 데이터를 불러오는 중…');
-  setBanner('b','loading','⏳ GitHub에서 최신 데이터를 불러오는 중…');
+// ════════════════════════════════════════
+//  LOAD
+// ════════════════════════════════════════
+async function loadAll() {
+  setSt('loading', '데이터 로딩 중…');
+  setEl('githubStatus', '<div class="banner loading">⏳ GitHub에서 데이터를 불러오는 중…</div>');
+  setEl('statusA', '로딩 중…'); setEl('statusB', '로딩 중…');
+
+  let okA = false, okB = false;
   try {
-    const res = await fetch(GITHUB_RAW_URL+'?t='+Date.now());
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const text = await res.text();
-    processCSV(text,'github');
+    const res = await fetch(URL_A + '?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    csvA = parseCSV(await res.text());
+    okA = true;
+    setEl('statusA', '✅ ' + csvA.length.toLocaleString() + '행');
+  } catch(e) { setEl('statusA', '❌ ' + e.message); }
+
+  try {
+    const res = await fetch(URL_B + '?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    csvB = parseCSV(await res.text());
+    okB = true;
+    setEl('statusB', '✅ ' + csvB.length.toLocaleString() + '행');
+  } catch(e) { setEl('statusB', '❌ ' + e.message); }
+
+  if (okA) {
+    buildWeekList();
+    buildFilters();
+    extractManagers();
     const now = new Date().toLocaleString('ko');
-    setSt('ok','GitHub · '+now+' 자동 로드됨');
-    setBanner('a','ok','✅ GitHub 최신 데이터 로드 완료 · '+now);
-    setBanner('b','ok','✅ GitHub 최신 데이터 로드 완료 · '+now);
-    setEl('githubStatus','<div class="banner ok">✅ 로드 완료 · '+rawData.length.toLocaleString()+'행 · '+now+'</div>');
-  } catch(e) {
-    setSt('err','GitHub 로드 실패 · 수동 업로드 이용');
-    setBanner('a','err','❌ GitHub 로드 실패('+e.message+') · 수동 업로드를 이용하세요');
-    setBanner('b','err','❌ GitHub 로드 실패('+e.message+') · 수동 업로드를 이용하세요');
-    setEl('githubStatus','<div class="banner err">❌ 실패: '+e.message+'</div>');
+    setSt('ok', 'GitHub · ' + now + ' 로드됨');
+    setEl('dept-banner', '<div class="banner ok">✅ 데이터 로드 완료 · A: ' + csvA.length.toLocaleString() + '행' + (okB ? ' · B: ' + csvB.length.toLocaleString() + '행' : ' · B: 로드 실패') + ' · ' + now + '</div>');
+    setEl('githubStatus', '<div class="banner ok">✅ 로드 완료 · ' + now + '</div>');
+  } else {
+    setSt('err', '로드 실패');
+    setEl('dept-banner', '<div class="banner err">❌ metrics_A.csv 로드 실패 · 수동 업로드를 이용하세요</div>');
+    setEl('githubStatus', '<div class="banner err">❌ 로드 실패</div>');
   }
 }
-function setSt(t,tx){document.getElementById('statusDot').className='dot '+t;document.getElementById('statusText').textContent=tx;}
-function setBanner(pg,t,tx){setEl(pg+'-banner','<div class="banner '+t+'">'+tx+'</div>');}
-function setEl(id,html){const el=document.getElementById(id);if(el)el.innerHTML=html;}
 
-// ── FILE UPLOAD ──
-const ua=document.getElementById('uploadArea');
-ua.addEventListener('dragover',e=>{e.preventDefault();ua.classList.add('drag');});
-ua.addEventListener('dragleave',()=>ua.classList.remove('drag'));
-ua.addEventListener('drop',e=>{e.preventDefault();ua.classList.remove('drag');if(e.dataTransfer.files[0])parseFile(e.dataTransfer.files[0]);});
-function handleFile(e){if(e.target.files[0])parseFile(e.target.files[0]);}
-function parseFile(file){const r=new FileReader();r.onload=ev=>{processCSV(ev.target.result,'manual');setSt('ok',file.name+' 로드됨');setBanner('a','manual','📁 수동 업로드 · '+file.name);setBanner('b','manual','📁 수동 업로드 · '+file.name);};r.readAsText(file,'UTF-8');}
+function setSt(t, tx) { document.getElementById('statusDot').className = 'dot ' + t; document.getElementById('statusText').textContent = tx; }
+function setEl(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
 
-function processCSV(text,src){
-  const lines=text.trim().split('\n');
-  const hdrs=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
-  rawData=lines.slice(1).map(line=>{const v=splitLine(line);const r={};hdrs.forEach((h,i)=>r[h]=(v[i]??'').trim().replace(/^"|"$/g,''));return r;}).filter(r=>Object.values(r).some(v=>v!==''));
-  buildWeekList();
-  buildFilters();
-}
-function splitLine(l){const r=[];let c='';let q=false;for(let i=0;i<l.length;i++){if(l[i]==='"'){q=!q;}else if(l[i]===','&&!q){r.push(c);c='';}else c+=l[i];}r.push(c);return r;}
-
-// ════════════════════════════════
-//  BUILD WEEK LIST (from raw data)
-//  ISO 주차 기준
-// ════════════════════════════════
-function buildWeekList(){
-  // 데이터에서 날짜 범위 추출
-  const dates=rawData.flatMap(r=>[pd(r['권한시작일']),pd(r['실제권한종료일']),pd(r['계산일'])]).filter(Boolean);
-  if(!dates.length) return;
-  const minD=new Date(Math.min(...dates.map(d=>d.getTime())));
-  const maxD=new Date();
-
-  // 전체 주차 생성
-  allWeeks=[];
-  let cur=getMonday(minD);
-  while(cur<=maxD){
-    const ws=new Date(cur);
-    const mid=ad(ws,3);
-    const y=String(mid.getFullYear()).slice(2);
-    const m=mid.getMonth()+1;
-    const w=Math.floor((mid.getDate()-1)/7)+1;
-    allWeeks.push({
-      weekStart: ws,
-      label: `${y}년 ${m}월 ${w}주차`,
-      monthKey: `${y}년 ${m}월`,
-      quarterKey: `${mid.getFullYear()}년 Q${Math.ceil(m/3)}`,
-      isoKey: isoWeekKey(ws)
-    });
-    cur=ad(cur,7);
-  }
-
-  // 드롭다운 채우기
-  ['a-week-sel','b-week-sel'].forEach(id=>{
-    const sel=document.getElementById(id);
-    const prev=sel.value;
-    sel.innerHTML='<option value="">-- 주차 선택 --</option>';
-    // 최신순
-    [...allWeeks].reverse().forEach(w=>{
-      const o=document.createElement('option');
-      o.value=w.isoKey;
-      o.textContent=w.label;
-      sel.appendChild(o);
-    });
-    // 기본값: 가장 최근 주차
-    if(allWeeks.length) sel.value=allWeeks[allWeeks.length-1].isoKey;
+// ── 수동 업로드 ──
+document.getElementById('fileA').closest('.upload-area')?.addEventListener('dragover', e => { e.preventDefault(); e.currentTarget.classList.add('drag'); });
+document.querySelectorAll('.upload-area').forEach(ua => {
+  ua.addEventListener('dragover', e => { e.preventDefault(); ua.classList.add('drag'); });
+  ua.addEventListener('dragleave', () => ua.classList.remove('drag'));
+  ua.addEventListener('drop', e => {
+    e.preventDefault(); ua.classList.remove('drag');
+    const input = ua.nextElementSibling;
+    const file = e.dataTransfer.files[0];
+    if (file && input) { const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files; input.dispatchEvent(new Event('change')); }
   });
+});
+function handleFile(e, which) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    if (which === 'A') { csvA = parseCSV(ev.target.result); buildWeekList(); buildFilters(); setEl('statusA', '✅ ' + csvA.length.toLocaleString() + '행 (수동)'); }
+    if (which === 'B') { csvB = parseCSV(ev.target.result); extractManagers(); setEl('statusB', '✅ ' + csvB.length.toLocaleString() + '행 (수동)'); }
+    setSt('ok', file.name + ' 로드됨');
+    setEl('dept-banner', '<div class="banner manual">📁 수동 업로드 · ' + file.name + '</div>');
+  };
+  r.readAsText(file, 'UTF-8');
 }
 
-function onWeekChange(pg){ updatePeriodStrip(pg); }
-function onModeChange(pg){ updatePeriodStrip(pg); }
-
-function updatePeriodStrip(pg){
-  const weekSel=document.getElementById(`${pg}-week-sel`);
-  const isoKey=parseInt(weekSel.value);
-  if(!isoKey) return;
-  const selWeek=allWeeks.find(w=>w.isoKey===isoKey);
-  if(!selWeek) return;
-
-  const mode=pg==='a'?document.getElementById('a-mode-sel').value:'weekly';
-  const{start,end}=getDateRange(selWeek,mode);
-  const strip=document.getElementById(`${pg}-period-strip`);
-  strip.style.display='flex';
-
-  let modeLabel='주차 단독';
-  if(mode==='monthly') modeLabel='월 누적';
-  if(mode==='quarterly') modeLabel='분기 누적';
-  if(pg==='b') modeLabel='주차 단독 + 분기 누적 순위';
-
-  strip.innerHTML=`
-    <span>📅 기준 주차: <strong>${selWeek.label}</strong></span>
-    <span class="period-sep">|</span>
-    <span>집계: <strong>${modeLabel}</strong></span>
-    <span class="period-sep">|</span>
-    <span>기간: <strong>${ds(start)}</strong> ~ <strong>${ds(end)}</strong></span>
-    <span class="period-sep">|</span>
-    <span>분기: <strong>${selWeek.quarterKey}</strong></span>
-  `;
+// ════════════════════════════════════════
+//  CSV PARSE
+// ════════════════════════════════════════
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const hdrs = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  return lines.slice(1).map(line => {
+    const vals = splitLine(line); const row = {};
+    hdrs.forEach((h, i) => row[h] = (vals[i] ?? '').trim().replace(/^"|"$/g, ''));
+    return row;
+  }).filter(r => Object.values(r).some(v => v !== ''));
 }
+function splitLine(l) { const r = []; let c = ''; let q = false; for (let i = 0; i < l.length; i++) { if (l[i] === '"') { q = !q; } else if (l[i] === ',' && !q) { r.push(c); c = ''; } else c += l[i]; } r.push(c); return r; }
 
-// 선택 주차 + 모드 → 실제 계산할 주차 배열 반환
-function getWeeksForMode(selWeek, mode){
-  if(mode==='weekly') return [selWeek];
-  if(mode==='monthly'){
-    return allWeeks.filter(w=>w.monthKey===selWeek.monthKey && w.isoKey<=selWeek.isoKey);
+// ════════════════════════════════════════
+//  EXTRACT VALID MANAGERS FROM B
+// ════════════════════════════════════════
+function extractManagers() {
+  // metrics_B에서 팀원 컬럼 추출 (선생님 or manager_name or 팀원)
+  if (!csvB.length) return;
+  const mgrCol = ['선생님', 'manager_name', '팀원'].find(c => Object.keys(csvB[0]).includes(c)) || Object.keys(csvB[0])[0];
+  validManagers = new Set(csvB.map(r => r[mgrCol]).filter(Boolean));
+
+  // mgr team select도 업데이트
+  const teamCol = ['담당부서', 'team_name', '팀'].find(c => Object.keys(csvB[0]).includes(c));
+  if (teamCol) {
+    const teams = [...new Set(csvB.map(r => r[teamCol]).filter(Boolean))].sort();
+    const sel = document.getElementById('mgr-team-sel');
+    sel.innerHTML = '<option value="ALL">전체 팀</option>';
+    teams.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o); });
   }
-  if(mode==='quarterly'){
-    return allWeeks.filter(w=>w.quarterKey===selWeek.quarterKey && w.isoKey<=selWeek.isoKey);
+}
+
+// ════════════════════════════════════════
+//  DATE HELPERS
+// ════════════════════════════════════════
+function pd(s) { if (!s) return null; const d = new Date(s.replace(' ', 'T').replace(/(\d{4}-\d{2}-\d{2})$/, '$1T00:00:00')); return isNaN(d) ? null : d; }
+function ds(d) { return d ? d.toISOString().slice(0, 10) : ''; }
+function ad(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+function getMonday(d) { const day = d.getDay(), diff = day === 0 ? -6 : 1 - day; return new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff); }
+function isoWeekKey(ws) { const mid = ad(ws, 3); const y = mid.getFullYear(); const jan1 = new Date(y, 0, 1); const w = Math.ceil(((mid - jan1) / 86400000 + jan1.getDay() + 1) / 7); return y * 100 + w; }
+
+// ════════════════════════════════════════
+//  BUILD WEEK LIST
+// ════════════════════════════════════════
+function buildWeekList() {
+  const dates = csvA.flatMap(r => [pd(r['권한시작일']), pd(r['실제권한종료일']), pd(r['계산일'])]).filter(Boolean);
+  if (!dates.length) return;
+  const minD = new Date(Math.min(...dates.map(d => d.getTime())));
+  const maxD = new Date();
+  allWeeks = [];
+  let cur = getMonday(minD);
+  while (cur <= maxD) {
+    const ws = new Date(cur);
+    const mid = ad(ws, 3);
+    const y = String(mid.getFullYear()).slice(2);
+    const m = mid.getMonth() + 1;
+    const w = Math.floor((mid.getDate() - 1) / 7) + 1;
+    allWeeks.push({ weekStart: ws, label: `${y}년 ${m}월 ${w}주차`, monthKey: `${y}년 ${m}월`, quarterKey: `${mid.getFullYear()}년 Q${Math.ceil(m / 3)}`, isoKey: isoWeekKey(ws) });
+    cur = ad(cur, 7);
   }
-  return [selWeek];
+  ['team-week-sel', 'mgr-week-sel'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">-- 주차 선택 --</option>';
+    [...allWeeks].reverse().forEach(w => { const o = document.createElement('option'); o.value = w.isoKey; o.textContent = w.label; sel.appendChild(o); });
+    if (allWeeks.length) sel.value = allWeeks[allWeeks.length - 1].isoKey;
+  });
+  onWeekChange('team');
+  onWeekChange('mgr');
 }
 
-function getDateRange(selWeek,mode){
-  const weeks=getWeeksForMode(selWeek,mode);
-  const start=weeks[0].weekStart;
-  const end=ad(weeks[weeks.length-1].weekStart,6);
-  return{start,end};
+// ════════════════════════════════════════
+//  FILTERS (팀별 pills)
+// ════════════════════════════════════════
+function buildFilters() {
+  const teams = [...new Set(csvA.map(r => r['담당부서']).filter(Boolean))].sort();
+  const pa = document.getElementById('team-pills');
+  pa.innerHTML = '';
+  pa.appendChild(mkPill('전체', 'ALL', true));
+  teams.forEach(t => pa.appendChild(mkPill(t, t, false)));
+  state.team.activeTeams = new Set(['ALL']);
 }
-
-// ════════════════════════════════
-//  FILTERS
-// ════════════════════════════════
-function buildFilters(){
-  const teams=[...new Set(rawData.map(r=>r['담당부서']).filter(Boolean))].sort();
-  // A pills
-  const pa=document.getElementById('a-pills');
-  pa.innerHTML='';
-  pa.appendChild(mkPill('전체','ALL',true,'a'));
-  teams.forEach(t=>pa.appendChild(mkPill(t,t,false,'a')));
-  state.a.activeTeams=new Set(['ALL']);
-  // B team select
-  const bts=document.getElementById('b-team-sel');
-  bts.innerHTML='<option value="ALL">전체 팀</option>';
-  teams.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;bts.appendChild(o);});
-}
-
-function mkPill(label,value,active,pg){
-  const el=document.createElement('div');
-  el.className='pill'+(active?' on':'');
-  el.textContent=label;
-  el.onclick=()=>toggleTeam(pg,value,el);
+function mkPill(label, value, active) {
+  const el = document.createElement('div');
+  el.className = 'pill' + (active ? ' on' : '');
+  el.textContent = label;
+  el.onclick = () => toggleTeam(value, el);
   return el;
 }
-function toggleTeam(pg,value,el){
-  const st=state[pg];
-  if(value==='ALL'){
-    st.activeTeams=new Set(['ALL']);
-    document.querySelectorAll(`#a-pills .pill`).forEach(p=>p.classList.remove('on'));
+function toggleTeam(value, el) {
+  const st = state.team;
+  if (value === 'ALL') {
+    st.activeTeams = new Set(['ALL']);
+    document.querySelectorAll('#team-pills .pill').forEach(p => p.classList.remove('on'));
     el.classList.add('on');
   } else {
     st.activeTeams.delete('ALL');
-    document.querySelector('#a-pills .pill').classList.remove('on');
-    if(st.activeTeams.has(value)){st.activeTeams.delete(value);el.classList.remove('on');}
-    else{st.activeTeams.add(value);el.classList.add('on');}
-    if(st.activeTeams.size===0){st.activeTeams=new Set(['ALL']);document.querySelector('#a-pills .pill').classList.add('on');}
+    document.querySelector('#team-pills .pill').classList.remove('on');
+    if (st.activeTeams.has(value)) { st.activeTeams.delete(value); el.classList.remove('on'); }
+    else { st.activeTeams.add(value); el.classList.add('on'); }
+    if (st.activeTeams.size === 0) { st.activeTeams = new Set(['ALL']); document.querySelector('#team-pills .pill').classList.add('on'); }
   }
-  if(rawData.length) runPage('a');
+  if (csvA.length) runTeam();
 }
 
-// ════════════════════════════════
-//  NAV
-// ════════════════════════════════
-function switchPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+// ════════════════════════════════════════
+//  WEEK CHANGE → PERIOD STRIP
+// ════════════════════════════════════════
+function onWeekChange(tab) {
+  const isoKey = parseInt(document.getElementById(`${tab}-week-sel`).value);
+  if (!isoKey) return;
+  const sel = allWeeks.find(w => w.isoKey === isoKey);
+  if (!sel) return;
+
+  if (tab === 'team') {
+    const mode = document.getElementById('team-mode-sel').value;
+    const weeks = getWeeksForMode(sel, mode);
+    const strip = document.getElementById('team-pstrip');
+    strip.classList.add('show');
+    document.getElementById('team-ps-week').textContent    = sel.label;
+    document.getElementById('team-ps-mode').textContent    = { weekly: '주차 단독', monthly: '월 누적', quarterly: '분기 누적' }[mode];
+    document.getElementById('team-ps-range').textContent   = weeks.length === 1 ? sel.label : weeks[0].label + ' ~ ' + sel.label;
+    document.getElementById('team-ps-quarter').textContent = sel.quarterKey;
+  } else {
+    const qWeeks = allWeeks.filter(w => w.quarterKey === sel.quarterKey && w.isoKey <= sel.isoKey);
+    const strip = document.getElementById('mgr-pstrip');
+    strip.classList.add('show');
+    document.getElementById('mgr-ps-week').textContent    = sel.label;
+    document.getElementById('mgr-ps-quarter').textContent = sel.quarterKey;
+    document.getElementById('mgr-ps-range').textContent   = qWeeks.length === 1 ? sel.label : qWeeks[0].label + ' ~ ' + sel.label;
+  }
+}
+
+function getWeeksForMode(selWeek, mode) {
+  if (mode === 'weekly')    return [selWeek];
+  if (mode === 'monthly')   return allWeeks.filter(w => w.monthKey   === selWeek.monthKey   && w.isoKey <= selWeek.isoKey);
+  if (mode === 'quarterly') return allWeeks.filter(w => w.quarterKey === selWeek.quarterKey && w.isoKey <= selWeek.isoKey);
+  return [selWeek];
+}
+
+// ════════════════════════════════════════
+//  NAV / SUB-TAB
+// ════════════════════════════════════════
+function switchPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const map={'page-a':0,'page-b':1,'page-upload':2};
+  const map = { 'page-dept': 0, 'page-inv': 1, 'page-upload': 2 };
   document.querySelectorAll('.nav-item')[map[id]]?.classList.add('active');
 }
 
-// ════════════════════════════════
-//  DATE HELPERS
-// ════════════════════════════════
-function pd(s){if(!s)return null;const d=new Date(s.replace(' ','T').replace(/(\d{4}-\d{2}-\d{2})$/,'$1T00:00:00'));return isNaN(d)?null:d;}
-function ds(d){return d?d.toISOString().slice(0,10):'';}
-function ad(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
-function getMonday(d){const day=d.getDay(),diff=day===0?-6:1-day;return new Date(d.getFullYear(),d.getMonth(),d.getDate()+diff);}
-function isoWeekKey(ws){const mid=ad(ws,3);const y=mid.getFullYear();const jan1=new Date(y,0,1);const w=Math.ceil(((mid-jan1)/86400000+jan1.getDay()+1)/7);return y*100+w;}
+function switchSubTab(tab) {
+  ['team', 'mgr'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+    document.getElementById('tab-' + t + '-btn').classList.toggle('active', t === tab);
+  });
+}
 
-// ════════════════════════════════
-//  CORE METRICS
-// ════════════════════════════════
-function prepRows(rows){
-  return rows.map(r=>({...r,
-    _sid:r['mildang_id']||r['학생이름'],
-    _mgr:r['선생님']||r['manager_name']||'',
-    _team:r['담당부서']||'',
-    _eff:pd(r['권한시작일']),_exp:pd(r['실제권한종료일']),_calc:pd(r['계산일']),
-    _calc_str:ds(pd(r['계산일'])),
-    _is_renewal:r['신규/재연장']==='재연장'||r['신규/재연장']==='1'||Number(r['신규/재연장'])===1,
-    _amt:parseFloat(r['결제금액'])||0,_cancel:parseFloat(r['환불금액'])||0,
-    _status:r['계약상태']||''
+// ════════════════════════════════════════
+//  CORE METRICS ENGINE
+// ════════════════════════════════════════
+function prepRows(rows) {
+  return rows.map(r => ({
+    ...r,
+    _sid:   r['mildang_id'] || r['학생이름'],
+    _mgr:   r['선생님'] || r['manager_name'] || '',
+    _team:  r['담당부서'] || '',
+    _eff:   pd(r['권한시작일']), _exp: pd(r['실제권한종료일']), _calc: pd(r['계산일']),
+    _calc_str: ds(pd(r['계산일'])),
+    _is_renewal: r['신규/재연장'] === '재연장' || r['신규/재연장'] === '1' || Number(r['신규/재연장']) === 1,
+    _amt: parseFloat(r['결제금액']) || 0,
+    _cancel: parseFloat(r['환불금액']) || 0,
+    _status: r['계약상태'] || ''
   }));
 }
 
-function calcMetrics(contracts,weekStart){
-  const we=ad(weekStart,6),pf=ad(weekStart,-3);
-  const CHURN=new Set(['환불','미연장','연장완료','전환_미연장','전환_환불','환불대기','관리진행']);
-  const LEAVE=new Set(['미연장','환불','환불대기']);
-  const cbs={};
-  contracts.forEach(c=>{if(!cbs[c._sid])cbs[c._sid]=new Set();if(c._calc_str)cbs[c._sid].add(c._calc_str);});
+function calcMetrics(contracts, weekStart) {
+  const we = ad(weekStart, 6), pf = ad(weekStart, -3);
+  const CHURN = new Set(['환불','미연장','연장완료','전환_미연장','전환_환불','환불대기','관리진행']);
+  const LEAVE = new Set(['미연장','환불','환불대기']);
+  const cbs = {};
+  contracts.forEach(c => { if (!cbs[c._sid]) cbs[c._sid] = new Set(); if (c._calc_str) cbs[c._sid].add(c._calc_str); });
   let basic=0,churn=0,mr=0,nr=0,open=0,fr=0,cd=0,ce=0,cr=0,cn=0;
-  contracts.forEach(c=>{
-    const{_status:st,_eff:eff,_exp:exp,_calc:calc,_is_renewal:isRen,_amt:amt,_cancel:cancel,_sid:sid}=c;
-    if(CHURN.has(st)&&eff&&exp&&eff<=pf&&exp>=pf) basic++;
-    if(LEAVE.has(st)&&exp&&exp>=weekStart&&exp<=we){churn++;if(st==='환불'||st==='환불대기')mr++;if(st==='미연장')nr++;}
-    if(!isRen&&eff&&eff>=weekStart&&eff<=we){const pd=ds(ad(eff,-1));if(!(cbs[sid]||new Set()).has(pd)){open++;if((st==='환불'||st==='환불대기')&&amt>0&&amt===cancel)fr++;}}
-    if(calc&&calc>=weekStart&&calc<=we&&CHURN.has(st)){cd++;if(st==='연장완료'||st==='전환_미연장'||st==='전환_환불')ce++;if(st==='환불'||st==='환불대기')cr++;if(st==='미연장')cn++;}
+  contracts.forEach(c => {
+    const { _status:st,_eff:eff,_exp:exp,_calc:calc,_is_renewal:isRen,_amt:amt,_cancel:cancel,_sid:sid } = c;
+    if (CHURN.has(st) && eff && exp && eff <= pf && exp >= pf) basic++;
+    if (LEAVE.has(st) && exp && exp >= weekStart && exp <= we) { churn++; if (st==='환불'||st==='환불대기') mr++; if (st==='미연장') nr++; }
+    if (!isRen && eff && eff >= weekStart && eff <= we) { const p2 = ds(ad(eff,-1)); if (!(cbs[sid]||new Set()).has(p2)) { open++; if ((st==='환불'||st==='환불대기') && amt>0 && amt===cancel) fr++; } }
+    if (calc && calc >= weekStart && calc <= we && CHURN.has(st)) { cd++; if (st==='연장완료'||st==='전환_미연장'||st==='전환_환불') ce++; if (st==='환불'||st==='환불대기') cr++; if (st==='미연장') cn++; }
   });
-  const pct=(a,b)=>b>0?Math.round(a/b*10000)/100:null;
-  return{basic_pt:basic,churn_pt:churn,mid_refund_pt:mr,nonrenew_pt:nr,churn_rate:pct(churn,basic),open_pt:open,new_full_churn_pt:fr,new_full_churn_rate:pct(fr,open),calc_due_pt:cd,calc_extend_pt:ce,calc_refund_pt:cr,calc_nonrenew_pt:cn,renew_rate:pct(ce,cd),extend_rate:pct(ce,ce+cn)};
+  const pct = (a,b) => b > 0 ? Math.round(a/b*10000)/100 : null;
+  return { basic_pt:basic,churn_pt:churn,mid_refund_pt:mr,nonrenew_pt:nr,churn_rate:pct(churn,basic),open_pt:open,new_full_churn_pt:fr,new_full_churn_rate:pct(fr,open),calc_due_pt:cd,calc_extend_pt:ce,calc_refund_pt:cr,calc_nonrenew_pt:cn,renew_rate:pct(ce,cd),extend_rate:pct(ce,ce+cn) };
 }
 
-function aggWeeks(contracts,weeks){
+function aggWeeks(contracts, weeks) {
   let b=0,ch=0,mr=0,nr=0,op=0,fr=0,cd=0,ce=0,cr=0,cn=0;
-  weeks.forEach(w=>{const m=calcMetrics(contracts,w.weekStart);b+=m.basic_pt;ch+=m.churn_pt;mr+=m.mid_refund_pt;nr+=m.nonrenew_pt;op+=m.open_pt;fr+=m.new_full_churn_pt;cd+=m.calc_due_pt;ce+=m.calc_extend_pt;cr+=m.calc_refund_pt;cn+=m.calc_nonrenew_pt;});
-  const pct=(a,b)=>b>0?Math.round(a/b*10000)/100:null;
-  return{basic_pt:b,churn_pt:ch,mid_refund_pt:mr,nonrenew_pt:nr,churn_rate:pct(ch,b),open_pt:op,new_full_churn_pt:fr,new_full_churn_rate:pct(fr,op),calc_due_pt:cd,calc_extend_pt:ce,calc_refund_pt:cr,calc_nonrenew_pt:cn,renew_rate:pct(ce,cd),extend_rate:pct(ce,ce+cn)};
+  weeks.forEach(w => { const m = calcMetrics(contracts, w.weekStart); b+=m.basic_pt;ch+=m.churn_pt;mr+=m.mid_refund_pt;nr+=m.nonrenew_pt;op+=m.open_pt;fr+=m.new_full_churn_pt;cd+=m.calc_due_pt;ce+=m.calc_extend_pt;cr+=m.calc_refund_pt;cn+=m.calc_nonrenew_pt; });
+  const pct = (a,b) => b > 0 ? Math.round(a/b*10000)/100 : null;
+  return { basic_pt:b,churn_pt:ch,mid_refund_pt:mr,nonrenew_pt:nr,churn_rate:pct(ch,b),open_pt:op,new_full_churn_pt:fr,new_full_churn_rate:pct(fr,op),calc_due_pt:cd,calc_extend_pt:ce,calc_refund_pt:cr,calc_nonrenew_pt:cn,renew_rate:pct(ce,cd),extend_rate:pct(ce,ce+cn) };
 }
 
-// ════════════════════════════════
-//  RUN PAGE A
-// ════════════════════════════════
-function runPage(pg){
-  if(!rawData.length){alert('데이터가 없습니다.');return;}
-  const isoKey=parseInt(document.getElementById(`${pg}-week-sel`).value);
-  if(!isoKey){alert('주차를 선택하세요.');return;}
-  const selWeek=allWeeks.find(w=>w.isoKey===isoKey);
-  if(!selWeek) return;
-  updatePeriodStrip(pg);
-
-  const contracts=prepRows(rawData);
-  if(pg==='a') runA(contracts,selWeek);
-  else         runB(contracts,selWeek);
+// ════════════════════════════════════════
+//  RUN TEAM TAB
+// ════════════════════════════════════════
+function runTeam() {
+  if (!csvA.length) { alert('데이터가 없습니다.'); return; }
+  const isoKey = parseInt(document.getElementById('team-week-sel').value);
+  if (!isoKey) { alert('주차를 선택하세요.'); return; }
+  const selWeek = allWeeks.find(w => w.isoKey === isoKey); if (!selWeek) return;
+  const mode = document.getElementById('team-mode-sel').value;
+  const weeks = getWeeksForMode(selWeek, mode);
+  const filterAll = state.team.activeTeams.has('ALL');
+  const contracts = prepRows(csvA);
+  const filtered = filterAll ? contracts : contracts.filter(c => state.team.activeTeams.has(c._team));
+  const teams = [...new Set(filtered.map(c => c._team).filter(Boolean))].sort();
+  const teamRows = teams.map(t => ({ _group: t, ...aggWeeks(filtered.filter(c => c._team === t), weeks) }));
+  const sumRow = { _group: '수학본부 종합', _summary: true, ...aggWeeks(filtered, weeks) };
+  const rows = [...teamRows, sumRow];
+  state.team.lastResult = rows;
+  renderKPI('team-kpi', [sumRow]);
+  renderTableTeam(rows);
+  const showChart = filterAll && teamRows.length > 1;
+  document.getElementById('team-compare-section').style.display = showChart ? 'block' : 'none';
+  if (showChart) renderCompareCharts(teamRows);
 }
 
-function runA(contracts,selWeek){
-  const mode=document.getElementById('a-mode-sel').value;
-  const weeks=getWeeksForMode(selWeek,mode);
-  const filterAll=state.a.activeTeams.has('ALL');
-  const filtered=filterAll?contracts:contracts.filter(c=>state.a.activeTeams.has(c._team));
-  const teams=[...new Set(filtered.map(c=>c._team).filter(Boolean))].sort();
+// ════════════════════════════════════════
+//  RUN MGR TAB
+// ════════════════════════════════════════
+function runMgr() {
+  if (!csvA.length) { alert('데이터가 없습니다.'); return; }
+  const isoKey = parseInt(document.getElementById('mgr-week-sel').value);
+  if (!isoKey) { alert('주차를 선택하세요.'); return; }
+  const selWeek = allWeeks.find(w => w.isoKey === isoKey); if (!selWeek) return;
+  const teamSel = document.getElementById('mgr-team-sel').value;
+  const contracts = prepRows(csvA);
 
-  // 각 팀 지표
-  const teamRows=teams.map(t=>({
-    _group:t,
-    ...aggWeeks(filtered.filter(c=>c._team===t),weeks)
-  }));
-  // 종합
-  const sumRow={_group:'수학본부 종합',_summary:true,...aggWeeks(filtered,weeks)};
-  const rows=[...teamRows,sumRow];
-  state.a.lastResult=rows;
-  state.a.lastTeamRows=teamRows;
+  // metrics_B의 팀원 목록으로 필터 (B가 있을 때만)
+  let filtered = contracts;
+  if (validManagers.size > 0) {
+    filtered = filtered.filter(c => validManagers.has(c._mgr));
+  }
+  if (teamSel !== 'ALL') filtered = filtered.filter(c => c._team === teamSel);
 
-  renderKPI('a',[sumRow]);
-  renderTableA(rows);
-  renderCompareCharts(teamRows,filterAll);
-}
-
-// ════════════════════════════════
-//  RUN PAGE B
-// ════════════════════════════════
-function runB(contracts,selWeek){
-  const teamSel=document.getElementById('b-team-sel').value;
-  let filtered=teamSel==='ALL'?contracts:contracts.filter(c=>c._team===teamSel);
-  filtered=filtered.map(c=>({...c,_mgr:c._mgr||(c._team?c._team+' 퇴사자 외':'퇴사자 외')}));
-
-  const managers=[...new Set(filtered.map(c=>c._mgr).filter(Boolean))].sort((a,b)=>{
-    if(a.includes('퇴사자'))return 1;if(b.includes('퇴사자'))return -1;return a.localeCompare(b,'ko');
+  // 퇴사자 처리
+  filtered = filtered.map(c => ({ ...c, _mgr: c._mgr || (c._team ? c._team + ' 퇴사자 외' : '퇴사자 외') }));
+  const managers = [...new Set(filtered.map(c => c._mgr).filter(Boolean))].sort((a,b) => {
+    if (a.includes('퇴사자')) return 1; if (b.includes('퇴사자')) return -1; return a.localeCompare(b,'ko');
   });
 
-  // ① 분기 누적 (순위용)
-  const qWeeks=allWeeks.filter(w=>w.quarterKey===selWeek.quarterKey&&w.isoKey<=selWeek.isoKey);
-  const rankRows=managers.map(m=>({
-    mgr:m,
-    team:filtered.find(c=>c._mgr===m)?._team||'',
-    ...aggWeeks(filtered.filter(c=>c._mgr===m),qWeeks)
+  // 분기 누적 (순위용)
+  const qWeeks = allWeeks.filter(w => w.quarterKey === selWeek.quarterKey && w.isoKey <= selWeek.isoKey);
+  const rankRows = managers.map(m => ({
+    mgr: m,
+    team: filtered.find(c => c._mgr === m)?._team || '',
+    ...aggWeeks(filtered.filter(c => c._mgr === m), qWeeks)
   }));
 
-  // ② 주차별 raw (선택 주차 단독)
-  const weekRows=[];
-  managers.forEach(m=>{
-    const mContracts=filtered.filter(c=>c._mgr===m);
-    const met=calcMetrics(mContracts,selWeek.weekStart);
-    weekRows.push({_mgr:m,_team:filtered.find(c=>c._mgr===m)?._team||'',_period:selWeek.label,...met,_retired:m.includes('퇴사자')});
-  });
-  // 종합 row
-  weekRows.push({_mgr:'수학본부 종합',_team:'',_period:selWeek.label,...calcMetrics(filtered,selWeek.weekStart),_summary:true});
+  // 주차 단독 raw
+  const weekRows = managers.map(m => ({
+    _mgr: m, _team: filtered.find(c => c._mgr === m)?._team || '', _period: selWeek.label,
+    ...calcMetrics(filtered.filter(c => c._mgr === m), selWeek.weekStart),
+    _retired: m.includes('퇴사자')
+  }));
+  weekRows.push({ _mgr: '수학본부 종합', _team: '', _period: selWeek.label, ...calcMetrics(filtered, selWeek.weekStart), _summary: true });
 
-  state.b.lastResult=rankRows;
-  state.b.lastWeekRows=weekRows;
-
-  renderRankTable(rankRows,selWeek.quarterKey);
-  renderTableB(weekRows);
-  document.getElementById('b-row-count').textContent=weekRows.length+'행';
+  state.mgr.lastRankRows = rankRows; state.mgr.lastWeekRows = weekRows;
+  renderRankTable(rankRows, selWeek.quarterKey);
+  renderTableMgr(weekRows);
+  document.getElementById('mgr-row-count').textContent = weekRows.length + '행';
 }
 
-// ════════════════════════════════
+function renderMgr() { if (csvA.length) runMgr(); }
+
+// ════════════════════════════════════════
 //  KPI
-// ════════════════════════════════
-function renderKPI(pg,rows){
-  const l=rows[0];if(!l)return;
-  const defs=[
-    {label:'기초PT',       val:l.basic_pt,                color:'cb',sub:'재적 인원'},
-    {label:'이탈PT',        val:l.churn_pt,                color:'cr',sub:'미연장+환불'},
-    {label:'이탈률',         val:fp(l.churn_rate),          color:'cr',sub:'이탈/기초PT'},
-    {label:'개강PT',        val:l.open_pt,                 color:'cg',sub:'신규 개강'},
-    {label:'신규전액환불PT', val:l.new_full_churn_pt,       color:'co',sub:'개강 즉시 전액'},
-    {label:'신규전액환불률', val:fp(l.new_full_churn_rate), color:'co',sub:'신규전액/개강'},
-    {label:'계산일 도래PT', val:l.calc_due_pt,             color:'cp',sub:'계산일 기준'},
-    {label:'재수강률',       val:fp(l.renew_rate),          color:'cg',sub:'연장/계산일도래'},
-    {label:'연장률',         val:fp(l.extend_rate),         color:'cb',sub:'연장/(연장+미연장)'},
+// ════════════════════════════════════════
+function renderKPI(targetId, rows) {
+  const l = rows[0]; if (!l) return;
+  const defs = [
+    { label:'기초PT',        val:l.basic_pt,                 color:'cb', sub:'재적 인원' },
+    { label:'이탈PT',         val:l.churn_pt,                 color:'cr', sub:'미연장+환불' },
+    { label:'이탈률',          val:fp(l.churn_rate),           color:'cr', sub:'이탈/기초PT' },
+    { label:'개강PT',         val:l.open_pt,                  color:'cg', sub:'신규 개강' },
+    { label:'신규전액환불PT',  val:l.new_full_churn_pt,        color:'co', sub:'개강 즉시 전액' },
+    { label:'신규전액환불률',  val:fp(l.new_full_churn_rate),  color:'co', sub:'신규전액/개강' },
+    { label:'계산일 도래PT',  val:l.calc_due_pt,              color:'cp', sub:'계산일 기준' },
+    { label:'재수강률',        val:fp(l.renew_rate),           color:'cg', sub:'연장/계산일도래' },
+    { label:'연장률',          val:fp(l.extend_rate),          color:'cb', sub:'연장/(연장+미연장)' },
   ];
-  document.getElementById(`${pg}-kpi`).innerHTML=defs.map(k=>`<div class="kpi-card ${k.color}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.val??'—'}</div><div class="kpi-sub">${k.sub}</div></div>`).join('');
+  document.getElementById(targetId).innerHTML = defs.map(k => `<div class="kpi-card ${k.color}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.val ?? '—'}</div><div class="kpi-sub">${k.sub}</div></div>`).join('');
 }
-function fp(v){return v!=null?v+'%':null;}
-function fn(v){return v!=null?Number(v).toLocaleString():'—';}
-function fpp(v){return v!=null?v+'%':'—';}
+function fp(v) { return v != null ? v + '%' : null; }
+function fn(v) { return v != null ? Number(v).toLocaleString() : '—'; }
+function fpp(v) { return v != null ? v + '%' : '—'; }
 
-// ════════════════════════════════
-//  TABLE A
-// ════════════════════════════════
-function renderTableA(rows){
-  const cols=[
-    {k:'_group',l:'팀',txt:true},
-    {k:'basic_pt',l:'기초PT'},{k:'churn_pt',l:'이탈PT'},{k:'mid_refund_pt',l:'중도환불PT'},{k:'nonrenew_pt',l:'미연장PT'},
-    {k:'churn_rate',l:'이탈률(%)',pct:true,bad:true},
-    {k:'open_pt',l:'개강PT'},{k:'new_full_churn_pt',l:'신규전액이탈PT'},{k:'new_full_churn_rate',l:'신규전액환불률(%)',pct:true,bad:true},
-    {k:'calc_due_pt',l:'계산일_도래PT'},{k:'calc_extend_pt',l:'계산일_연장PT'},{k:'calc_refund_pt',l:'계산일_환불PT'},{k:'calc_nonrenew_pt',l:'계산일_미연장PT'},
-    {k:'renew_rate',l:'재수강률(%)',pct:true,good:true},{k:'extend_rate',l:'연장률(%)',pct:true,good:true},
-  ];
-  let h='<table><thead><tr>'+cols.map(c=>`<th${c.txt?' class="l"':''}>${c.l}</th>`).join('')+'</tr></thead><tbody>';
-  rows.forEach(r=>{
-    const cls=r._summary?' class="row-sum"':'';
-    h+=`<tr${cls}>`+cols.map(c=>{
-      const v=r[c.k];
-      if(c.txt)return`<td class="l">${v??'—'}</td>`;
-      if(c.pct){const cl=c.good&&v>=70?'pg':c.bad&&v!=null&&v>30?'pb':'';return`<td class="${cl}">${fpp(v)}</td>`;}
-      return`<td>${fn(v)}</td>`;
-    }).join('')+'</tr>';
+// ════════════════════════════════════════
+//  TABLE HELPERS
+// ════════════════════════════════════════
+const METRIC_COLS = [
+  {k:'basic_pt',l:'기초PT'},{k:'churn_pt',l:'이탈PT'},{k:'mid_refund_pt',l:'중도환불PT'},{k:'nonrenew_pt',l:'미연장PT'},
+  {k:'churn_rate',l:'이탈률(%)',pct:true,bad:true},
+  {k:'open_pt',l:'개강PT'},{k:'new_full_churn_pt',l:'신규전액이탈PT'},{k:'new_full_churn_rate',l:'신규전액환불률(%)',pct:true,bad:true},
+  {k:'calc_due_pt',l:'계산일_도래PT'},{k:'calc_extend_pt',l:'계산일_연장PT'},{k:'calc_refund_pt',l:'계산일_환불PT'},{k:'calc_nonrenew_pt',l:'계산일_미연장PT'},
+  {k:'renew_rate',l:'재수강률(%)',pct:true,good:true},{k:'extend_rate',l:'연장률(%)',pct:true,good:true},
+];
+
+function renderCell(c, v) {
+  if (c.pct) { const cl = c.good && v >= 70 ? ' class="pg"' : c.bad && v != null && v > 30 ? ' class="pb"' : ''; return `<td${cl}>${fpp(v)}</td>`; }
+  return `<td>${fn(v)}</td>`;
+}
+
+function renderTableTeam(rows) {
+  const cols = [{k:'_group',l:'팀',txt:true}, ...METRIC_COLS];
+  let h = '<table><thead><tr>' + cols.map(c => `<th${c.txt?' class="l"':''}>${c.l}</th>`).join('') + '</tr></thead><tbody>';
+  rows.forEach(r => {
+    h += `<tr${r._summary?' class="row-sum"':''}>` + cols.map(c => c.txt ? `<td class="l">${r[c.k]??'—'}</td>` : renderCell(c, r[c.k])).join('') + '</tr>';
   });
-  document.getElementById('a-table').innerHTML=h+'</tbody></table>';
-  document.getElementById('a-row-count').textContent=rows.length+'행';
+  document.getElementById('team-table').innerHTML = h + '</tbody></table>';
+  document.getElementById('team-row-count').textContent = rows.length + '행';
 }
 
-// ════════════════════════════════
-//  TABLE B (주차별 raw)
-// ════════════════════════════════
-function renderTableB(rows){
-  const cols=[
-    {k:'_mgr',l:'팀원',txt:true},{k:'_team',l:'팀',txt:true},{k:'_period',l:'주차',txt:true},
-    {k:'basic_pt',l:'기초PT'},{k:'churn_pt',l:'이탈PT'},{k:'mid_refund_pt',l:'중도환불PT'},{k:'nonrenew_pt',l:'미연장PT'},
-    {k:'churn_rate',l:'이탈률(%)',pct:true,bad:true},
-    {k:'open_pt',l:'개강PT'},{k:'new_full_churn_pt',l:'신규전액이탈PT'},{k:'new_full_churn_rate',l:'신규전액환불률(%)',pct:true,bad:true},
-    {k:'calc_due_pt',l:'계산일_도래PT'},{k:'calc_extend_pt',l:'계산일_연장PT'},{k:'calc_refund_pt',l:'계산일_환불PT'},{k:'calc_nonrenew_pt',l:'계산일_미연장PT'},
-    {k:'renew_rate',l:'재수강률(%)',pct:true,good:true},{k:'extend_rate',l:'연장률(%)',pct:true,good:true},
-  ];
-  let h='<table><thead><tr>'+cols.map(c=>`<th${c.txt?' class="l"':''}>${c.l}</th>`).join('')+'</tr></thead><tbody>';
-  rows.forEach(r=>{
-    const cls=r._summary?' class="row-sum"':r._retired?' class="row-ret"':'';
-    h+=`<tr${cls}>`+cols.map(c=>{
-      const v=r[c.k];
-      if(c.txt)return`<td class="l">${v??'—'}</td>`;
-      if(c.pct){const cl=c.good&&v>=70?'pg':c.bad&&v!=null&&v>30?'pb':'';return`<td class="${cl}">${fpp(v)}</td>`;}
-      return`<td>${fn(v)}</td>`;
-    }).join('')+'</tr>';
+function renderTableMgr(rows) {
+  const cols = [{k:'_mgr',l:'팀원',txt:true},{k:'_team',l:'팀',txt:true},{k:'_period',l:'주차',txt:true}, ...METRIC_COLS];
+  let h = '<table><thead><tr>' + cols.map(c => `<th${c.txt?' class="l"':''}>${c.l}</th>`).join('') + '</tr></thead><tbody>';
+  rows.forEach(r => {
+    const cls = r._summary ? ' class="row-sum"' : r._retired ? ' class="row-ret"' : '';
+    h += `<tr${cls}>` + cols.map(c => c.txt ? `<td class="l">${r[c.k]??'—'}</td>` : renderCell(c, r[c.k])).join('') + '</tr>';
   });
-  document.getElementById('b-table').innerHTML=h+'</tbody></table>';
+  document.getElementById('mgr-table').innerHTML = h + '</tbody></table>';
 }
 
-// ════════════════════════════════
-//  RANK TABLE B
-// ════════════════════════════════
-function renderRankTable(rows,quarterKey){
-  document.getElementById('b-rank-quarter').textContent=quarterKey+' 누적';
-
-  // 계산일 도래PT > 0인 것만 순위, 나머지 비고
-  const valid=rows.filter(r=>r.calc_due_pt>0).sort((a,b)=>(b.renew_rate??-1)-(a.renew_rate??-1));
-  const bigo=rows.filter(r=>r.calc_due_pt===0);
-
-  let h=`<table class="rank-table"><thead><tr>
-    <th class="l" style="width:40px">순위</th>
-    <th class="l">팀원</th>
-    <th class="l">팀</th>
-    <th>계산일_도래PT</th>
-    <th>계산일_연장PT</th>
-    <th>재수강률(%)</th>
-    <th>연장률(%)</th>
-    <th>기초PT</th>
-    <th>이탈률(%)</th>
+// ════════════════════════════════════════
+//  RANK TABLE
+// ════════════════════════════════════════
+function renderRankTable(rows, quarterKey) {
+  document.getElementById('mgr-rank-label').textContent = quarterKey + ' 누적';
+  const valid = rows.filter(r => r.calc_due_pt > 0).sort((a,b) => (b.renew_rate??-1) - (a.renew_rate??-1));
+  const bigo  = rows.filter(r => r.calc_due_pt === 0);
+  let h = `<table><thead><tr>
+    <th class="l" style="width:40px">순위</th><th class="l">팀원</th><th class="l">팀</th>
+    <th>계산일_도래PT</th><th>계산일_연장PT</th><th>재수강률(%)</th><th>연장률(%)</th><th>기초PT</th><th>이탈률(%)</th>
   </tr></thead><tbody>`;
-
-  valid.forEach((r,i)=>{
-    const rank=i+1;
-    const badgeCls=rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-n';
-    const rr=r.renew_rate;
-    const rrCls=rr!=null&&rr>=70?'pg':rr!=null&&rr<40?'pb':'';
-    h+=`<tr>
-      <td class="l"><span class="rank-badge ${badgeCls}">${rank}</span></td>
-      <td class="l"><strong>${r.mgr}</strong></td>
-      <td class="l">${r.team}</td>
-      <td>${fn(r.calc_due_pt)}</td>
-      <td>${fn(r.calc_extend_pt)}</td>
-      <td class="${rrCls}">${fpp(r.renew_rate)}</td>
-      <td>${fpp(r.extend_rate)}</td>
-      <td>${fn(r.basic_pt)}</td>
-      <td class="${r.churn_rate!=null&&r.churn_rate>30?'pb':''}">${fpp(r.churn_rate)}</td>
-    </tr>`;
+  valid.forEach((r,i) => {
+    const rank = i+1;
+    const bc = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-n';
+    const rr = r.renew_rate, rCls = rr!=null&&rr>=70?' class="pg"':rr!=null&&rr<40?' class="pb"':'';
+    const cr = r.churn_rate, cCls = cr!=null&&cr>30?' class="pb"':'';
+    h += `<tr><td class="l"><span class="rank-badge ${bc}">${rank}</span></td><td class="l"><strong>${r.mgr}</strong></td><td class="l">${r.team}</td><td>${fn(r.calc_due_pt)}</td><td>${fn(r.calc_extend_pt)}</td><td${rCls}>${fpp(r.renew_rate)}</td><td>${fpp(r.extend_rate)}</td><td>${fn(r.basic_pt)}</td><td${cCls}>${fpp(r.churn_rate)}</td></tr>`;
   });
-
-  if(bigo.length){
-    h+=`<tr><td class="l" colspan="9" style="padding:10px;color:var(--text-light);font-size:11px;font-family:'Noto Sans KR',sans-serif;">── 계산일 도래PT = 0 (비고) ──</td></tr>`;
-    bigo.forEach(r=>{
-      h+=`<tr class="row-ret">
-        <td class="l"><span class="rank-bigo">비고</span></td>
-        <td class="l">${r.mgr}</td>
-        <td class="l">${r.team}</td>
-        <td>${fn(r.calc_due_pt)}</td>
-        <td>${fn(r.calc_extend_pt)}</td>
-        <td>—</td>
-        <td>—</td>
-        <td>${fn(r.basic_pt)}</td>
-        <td>${fpp(r.churn_rate)}</td>
-      </tr>`;
+  if (bigo.length) {
+    h += `<tr><td colspan="9" style="padding:9px 10px;font-size:11px;color:var(--text-light);font-family:'Noto Sans KR',sans-serif;background:var(--surface2);border-bottom:1px solid var(--border)">── 계산일 도래PT = 0 (비고) ──</td></tr>`;
+    bigo.forEach(r => {
+      h += `<tr class="row-ret"><td class="l"><span class="rank-bigo">비고</span></td><td class="l">${r.mgr}</td><td class="l">${r.team}</td><td>${fn(r.calc_due_pt)}</td><td>${fn(r.calc_extend_pt)}</td><td>—</td><td>—</td><td>${fn(r.basic_pt)}</td><td>${fpp(r.churn_rate)}</td></tr>`;
     });
   }
-
-  document.getElementById('b-rank-table').innerHTML=h+'</tbody></table>';
+  document.getElementById('mgr-rank-table').innerHTML = h + '</tbody></table>';
 }
 
-// ════════════════════════════════
-//  COMPARE CHARTS (A, 전체 팀)
-// ════════════════════════════════
-function renderCompareCharts(teamRows,isAll){
-  const sec=document.getElementById('a-compare-section');
-  if(!isAll||teamRows.length===0){sec.style.display='none';return;}
-  sec.style.display='block';
-
-  const labels=teamRows.map(r=>r._group);
-  const COLORS=['#3b6ef0','#10b97a','#f08030','#e03030','#8b5cf6','#f0c040','#06b6d4','#ec4899'];
-  const bg=labels.map((_,i)=>COLORS[i%COLORS.length]+'cc');
-
-  const chartDefs=[
-    {id:'a-cmp-churn', key:'churn_rate',  label:'이탈률(%)'},
-    {id:'a-cmp-extend',key:'extend_rate', label:'연장률(%)'},
-    {id:'a-cmp-renew', key:'renew_rate',  label:'재수강률(%)'},
-    {id:'a-cmp-basic', key:'basic_pt',    label:'기초PT'},
-  ];
-
-  chartDefs.forEach(({id,key,label})=>{
-    if(charts[id]){charts[id].destroy();delete charts[id];}
-    const ctx=document.getElementById(id).getContext('2d');
-    charts[id]=new Chart(ctx,{
+// ════════════════════════════════════════
+//  COMPARE CHARTS
+// ════════════════════════════════════════
+const COLORS = ['#3b6ef0','#10b97a','#f08030','#e03030','#8b5cf6','#f0c040','#06b6d4','#ec4899'];
+function renderCompareCharts(teamRows) {
+  const labels = teamRows.map(r => r._group);
+  const bg = labels.map((_,i) => COLORS[i%COLORS.length] + 'cc');
+  const opts = { responsive:true, maintainAspectRatio:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#7a82a0',font:{size:10},maxRotation:30},grid:{color:'rgba(200,210,230,.4)'}},y:{ticks:{color:'#7a82a0',font:{size:10}},grid:{color:'rgba(200,210,230,.4)'}}} };
+  [
+    {id:'cmp-churn', key:'churn_rate',  label:'이탈률(%)'},
+    {id:'cmp-renew', key:'renew_rate',  label:'재수강률(%)'},
+    {id:'cmp-extend',key:'extend_rate', label:'연장률(%)'},
+    {id:'cmp-basic', key:'basic_pt',    label:'기초PT'},
+  ].forEach(({id,key,label}) => {
+    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+    charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
       type:'bar',
-      data:{
-        labels,
-        datasets:[{label,data:teamRows.map(r=>r[key]??0),backgroundColor:bg,borderRadius:5}]
-      },
-      options:{
-        responsive:true,maintainAspectRatio:true,
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{ticks:{color:'#7a82a0',font:{size:10},maxRotation:30},grid:{color:'rgba(200,210,230,.4)'}},
-          y:{ticks:{color:'#7a82a0',font:{size:10}},grid:{color:'rgba(200,210,230,.4)'}}
-        }
-      }
+      data:{ labels, datasets:[{label, data:teamRows.map(r=>r[key]??0), backgroundColor:bg, borderRadius:5}] },
+      options:opts
     });
   });
 }
 
-// ════════════════════════════════
+// ════════════════════════════════════════
 //  EXPORT
-// ════════════════════════════════
-function exportPage(pg){
-  const rows=pg==='a'?state.a.lastResult:state.b.lastWeekRows;
-  if(!rows||!rows.length){alert('먼저 분석을 실행하세요.');return;}
-  const isB=pg==='b';
-  const cols=isB?['_mgr','_team','_period','basic_pt','churn_pt','mid_refund_pt','nonrenew_pt','churn_rate','open_pt','new_full_churn_pt','new_full_churn_rate','calc_due_pt','calc_extend_pt','calc_refund_pt','calc_nonrenew_pt','renew_rate','extend_rate']:['_group','basic_pt','churn_pt','mid_refund_pt','nonrenew_pt','churn_rate','open_pt','new_full_churn_pt','new_full_churn_rate','calc_due_pt','calc_extend_pt','calc_refund_pt','calc_nonrenew_pt','renew_rate','extend_rate'];
-  const hdrs=isB?['팀원','팀','주차','기초PT','이탈PT','중도환불PT','미연장PT','이탈률(%)','개강PT','신규전액이탈PT','신규전액환불률(%)','계산일_도래PT','계산일_연장PT','계산일_환불PT','계산일_미연장PT','재수강률(%)','연장률(%)']:['팀','기초PT','이탈PT','중도환불PT','미연장PT','이탈률(%)','개강PT','신규전액이탈PT','신규전액환불률(%)','계산일_도래PT','계산일_연장PT','계산일_환불PT','계산일_미연장PT','재수강률(%)','연장률(%)'];
-  const csv=[hdrs.join(','),...rows.map(r=>cols.map(c=>`"${r[c]??''}"`).join(','))].join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
-  a.download=`성과지표_기준${pg.toUpperCase()}_${new Date().toISOString().slice(0,10)}.csv`;
+// ════════════════════════════════════════
+function exportData(tab) {
+  const rows = tab === 'team' ? state.team.lastResult : state.mgr.lastWeekRows;
+  if (!rows || !rows.length) { alert('먼저 분석을 실행하세요.'); return; }
+  const isM = tab === 'mgr';
+  const cols = isM ? ['_mgr','_team','_period','basic_pt','churn_pt','mid_refund_pt','nonrenew_pt','churn_rate','open_pt','new_full_churn_pt','new_full_churn_rate','calc_due_pt','calc_extend_pt','calc_refund_pt','calc_nonrenew_pt','renew_rate','extend_rate']
+                   : ['_group','basic_pt','churn_pt','mid_refund_pt','nonrenew_pt','churn_rate','open_pt','new_full_churn_pt','new_full_churn_rate','calc_due_pt','calc_extend_pt','calc_refund_pt','calc_nonrenew_pt','renew_rate','extend_rate'];
+  const hdrs = isM ? ['팀원','팀','주차','기초PT','이탈PT','중도환불PT','미연장PT','이탈률(%)','개강PT','신규전액이탈PT','신규전액환불률(%)','계산일_도래PT','계산일_연장PT','계산일_환불PT','계산일_미연장PT','재수강률(%)','연장률(%)']
+                   : ['팀','기초PT','이탈PT','중도환불PT','미연장PT','이탈률(%)','개강PT','신규전액이탈PT','신규전액환불률(%)','계산일_도래PT','계산일_연장PT','계산일_환불PT','계산일_미연장PT','재수강률(%)','연장률(%)'];
+  const csv = [hdrs.join(','), ...rows.map(r => cols.map(c => `"${r[c]??''}"`).join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' }));
+  a.download = `성과지표_${tab === 'team' ? '팀별' : '팀원별'}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 }
 
-// ════════════════════════════════
+// ════════════════════════════════════════
 //  INIT
-// ════════════════════════════════
-loadFromGitHub();
+// ════════════════════════════════════════
+loadAll();
 </script>
 </body>
 </html>
