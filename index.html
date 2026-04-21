@@ -1014,11 +1014,11 @@ function buildPPTData() {
   };
 }
 
-// ── n8n Webhook URL ── import 후 실제 URL로 교체하세요
-// 토큰은 n8n Credential에만 보관 → 대시보드에 토큰 없음
+// ── n8n Webhook URL ── 실제 URL로 교체하세요
 const PPT_WEBHOOK_URL = 'https://ontact.app.n8n.cloud/webhook/generate-ppt';
+const GH_REPO = 'jaehyun-pt/math_KPI';
+const PPT_RESULT_URL = `https://raw.githubusercontent.com/${GH_REPO}/main/data/ppt_result.pptx`;
 
-// ── PPT 버튼 클릭 핸들러 ──
 async function exportPPT() {
   if (!csvA.length) { alert('데이터가 없습니다.'); return; }
   const isoKey = parseInt(document.getElementById('tw-sel').value);
@@ -1027,57 +1027,85 @@ async function exportPPT() {
   const data = buildPPTData();
   if (!data) { alert('데이터 준비 실패'); return; }
 
-  const btn      = document.getElementById('ppt-btn');
-  const start    = Date.now();
-  btn.disabled   = true;
+  const btn   = document.getElementById('ppt-btn');
+  const start = Date.now();
+  btn.disabled = true;
 
-  // 경과 시간 표시 타이머
+  // 경과 시간 표시
   const timer = setInterval(() => {
     const s = Math.floor((Date.now() - start) / 1000);
-    const m = Math.floor(s / 60);
-    btn.textContent = `⏳ PPT 생성 중… (${m}:${String(s % 60).padStart(2,'0')})`;
+    btn.textContent = `⏳ PPT 생성 중… (${Math.floor(s/60)}:${String(s%60).padStart(2,'0')})`;
   }, 1000);
 
   try {
-    // n8n이 GitHub push + Actions 폴링 + 완료 후 URL 응답
+    // ── 1단계: n8n으로 push 요청 ──────────────────
+    btn.textContent = '⏳ 요청 전송 중…';
     const res = await fetch(PPT_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-
-    // 응답 텍스트 먼저 읽기 (빈 응답 / 비JSON 대응)
     const rawText = await res.text();
-    console.log('[PPT] n8n 응답 status:', res.status);
-    console.log('[PPT] n8n 응답 body:', rawText);
+    console.log('[PPT] n8n 응답:', res.status, rawText);
+    if (!res.ok) throw new Error(`n8n 오류 (${res.status}): ${rawText.slice(0,200)}`);
 
-    if (!res.ok) {
-      throw new Error(`n8n 응답 오류 (HTTP ${res.status}): ${rawText.slice(0, 200)}`);
+    let parsed = {};
+    try { parsed = JSON.parse(rawText); } catch(_) {}
+    if (parsed.ok === false) throw new Error(parsed.message || 'push 실패');
+
+    // ── 2단계: 브라우저에서 직접 GitHub Actions 폴링 ──
+    // push 직후 Actions 트리거까지 잠깐 대기
+    await sleep(6000);
+
+    // Actions Run 조회 (public 레포 → 토큰 불필요)
+    let runId = null;
+    for (let i = 0; i < 12; i++) {
+      await sleep(3000);
+      try {
+        const r = await fetch(
+          `https://api.github.com/repos/${GH_REPO}/actions/runs?per_page=5&branch=main`,
+          { headers: { 'Accept': 'application/vnd.github+json' } }
+        );
+        const j = await r.json();
+        const run = (j.workflow_runs || []).find(r =>
+          r.name === 'PPT 보고서 생성' &&
+          ['queued','in_progress','completed'].includes(r.status)
+        );
+        if (run) { runId = run.id; console.log('[PPT] Run ID:', runId); break; }
+      } catch(_) {}
     }
+    if (!runId) throw new Error('Actions 실행을 찾을 수 없습니다.\n레포 Actions 탭에서 워크플로우가 활성화되어 있는지 확인하세요.');
 
-    if (!rawText || rawText.trim() === '') {
-      throw new Error('n8n이 빈 응답을 반환했습니다. 워크플로우 실행 로그를 확인하세요.');
+    // 완료 대기 (최대 5분)
+    const TIMEOUT = 5 * 60 * 1000;
+    while (Date.now() - start < TIMEOUT) {
+      await sleep(10000);
+      try {
+        const r = await fetch(
+          `https://api.github.com/repos/${GH_REPO}/actions/runs/${runId}`,
+          { headers: { 'Accept': 'application/vnd.github+json' } }
+        );
+        const run = await r.json();
+        console.log('[PPT] Actions 상태:', run.status, run.conclusion);
+        if (run.status === 'completed') {
+          if (run.conclusion !== 'success')
+            throw new Error(`Actions 실패 (${run.conclusion}).\n레포 Actions 탭에서 로그를 확인하세요.`);
+          break;
+        }
+      } catch(e) { if (e.message.includes('Actions')) throw e; }
     }
+    if (Date.now() - start >= TIMEOUT) throw new Error('시간 초과 (5분)');
 
-    let parsed;
-    try {
-      parsed = JSON.parse(rawText);
-    } catch(_) {
-      throw new Error(`JSON 파싱 실패. n8n 응답: ${rawText.slice(0, 200)}`);
-    }
-
-    const { ok, url, message } = parsed;
-    if (!ok) throw new Error(message || 'PPT 생성 실패');
-
-    // n8n이 반환한 raw URL로 다운로드
+    // ── 3단계: ppt_result.pptx 다운로드 ────────────
     clearInterval(timer);
     btn.textContent = '⬇ 다운로드 중…';
+    await sleep(3000); // 커밋 반영 대기
 
-    const weekLabel = allWeeks.find(w => w.isoKey === isoKey)?.label || '';
-    const pptRes = await fetch(url);
+    const pptRes = await fetch(PPT_RESULT_URL + '?t=' + Date.now());
     if (!pptRes.ok) throw new Error('PPTX 파일을 받아올 수 없습니다.');
 
     const blob = await pptRes.blob();
+    const weekLabel = allWeeks.find(w => w.isoKey === isoKey)?.label || '';
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `성과지표보고_${weekLabel.replace(/\s/g,'_')}.pptx`;
