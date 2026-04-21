@@ -29,7 +29,7 @@ NS = {
 for prefix, uri in NS.items():
     etree.register_namespace(prefix, uri)
 
-PPTX_TEMPLATE = '/mnt/user-data/uploads/_최종__26년_4월_2주차_수학온택트_성과지표보고.pptx'
+PPTX_TEMPLATE = '/mnt/user-data/uploads/성과지표보고_템플릿.pptx'
 UNPACKED_DIR  = '/home/claude/unpacked_gen'
 OUTPUT_PPTX   = '/home/claude/output_report.pptx'
 
