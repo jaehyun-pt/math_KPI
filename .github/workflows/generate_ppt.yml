@@ -3,14 +3,13 @@ name: PPT 보고서 생성
 on:
   push:
     paths:
-      - 'data/ppt_request.json'   # 대시보드가 이 파일을 push하면 트리거
+      - 'data/ppt_request.json'
 
 jobs:
   generate-ppt:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # 파일 읽기/쓰기 (ppt_request 읽고 결과 push)
-      actions: write
+      contents: write
 
     steps:
       - name: 레포 체크아웃
@@ -24,24 +23,39 @@ jobs:
           python-version: '3.11'
 
       - name: 의존성 설치
-        run: |
-          pip install lxml matplotlib pillow defusedxml
+        run: pip install lxml matplotlib pillow defusedxml
 
       - name: PPT 생성
-        run: |
-          python generate_ppt.py data/ppt_request.json output_report.pptx
+        run: python generate_ppt.py data/ppt_request.json output_report.pptx
 
       - name: 생성된 파일 확인
         run: ls -lh output_report.pptx
 
-      # ── ppt_result.pptx 를 data/ 에 커밋해서 raw URL로 다운로드 가능하게 함 ──
-      - name: 결과 PPTX 커밋
+      - name: ppt-output 브랜치에 결과 저장
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          cp output_report.pptx data/ppt_result.pptx
-          git add data/ppt_result.pptx
-          # 요청 파일에서 주차 레이블 추출해서 커밋 메시지에 포함
-          WEEK=$(python3 -c "import json; d=json.load(open('data/ppt_request.json')); print(d.get('selected_week',''))" 2>/dev/null || echo "")
-          git commit -m "chore: PPT 보고서 생성 - ${WEEK} [skip ci]"
-          git push
+
+          # ppt-output 브랜치 없으면 생성
+          git fetch origin ppt-output 2>/dev/null || git checkout --orphan ppt-output
+
+          # 브랜치 전환 (이미 있으면 checkout)
+          git checkout ppt-output 2>/dev/null || true
+
+          # main의 최신 파일 가져오기
+          git checkout main -- output_report.pptx 2>/dev/null || cp output_report.pptx ./ppt_result.pptx
+
+          cp output_report.pptx ppt_result.pptx
+
+          WEEK=$(python3 -c "
+          import json, sys
+          try:
+            d = json.load(open('/home/runner/work/math_KPI/math_KPI/data/ppt_request.json'))
+            print(d.get('selected_week',''))
+          except:
+            print('')
+          " 2>/dev/null || echo "")
+
+          git add ppt_result.pptx
+          git commit -m "chore: PPT 보고서 - ${WEEK} [skip ci]" || echo "변경 없음"
+          git push origin ppt-output
