@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'data/ppt_request.json'
+  workflow_dispatch:   # 수동 실행 가능
 
 jobs:
   generate-ppt:
