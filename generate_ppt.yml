@@ -1,0 +1,48 @@
+name: PPT 보고서 생성
+
+on:
+  push:
+    paths:
+      - 'data/ppt_request.json'   # 대시보드가 이 파일을 push하면 트리거
+
+jobs:
+  generate-ppt:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 파일 읽기/쓰기 (ppt_request 읽고 결과 push)
+      actions: write
+
+    steps:
+      - name: 레포 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Python 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 의존성 설치
+        run: |
+          pip install lxml matplotlib pillow defusedxml
+
+      - name: PPT 생성
+        run: |
+          python generate_ppt.py data/ppt_request.json output_report.pptx
+
+      - name: 생성된 파일 확인
+        run: ls -lh output_report.pptx
+
+      # ── ppt_result.pptx 를 data/ 에 커밋해서 raw URL로 다운로드 가능하게 함 ──
+      - name: 결과 PPTX 커밋
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          cp output_report.pptx data/ppt_result.pptx
+          git add data/ppt_result.pptx
+          # 요청 파일에서 주차 레이블 추출해서 커밋 메시지에 포함
+          WEEK=$(python3 -c "import json; d=json.load(open('data/ppt_request.json')); print(d.get('selected_week',''))" 2>/dev/null || echo "")
+          git commit -m "chore: PPT 보고서 생성 - ${WEEK} [skip ci]"
+          git push
