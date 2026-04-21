@@ -1046,12 +1046,27 @@ async function exportPPT() {
       body: JSON.stringify(data)
     });
 
+    // 응답 텍스트 먼저 읽기 (빈 응답 / 비JSON 대응)
+    const rawText = await res.text();
+    console.log('[PPT] n8n 응답 status:', res.status);
+    console.log('[PPT] n8n 응답 body:', rawText);
+
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `HTTP ${res.status}`);
+      throw new Error(`n8n 응답 오류 (HTTP ${res.status}): ${rawText.slice(0, 200)}`);
     }
 
-    const { ok, url, message } = await res.json();
+    if (!rawText || rawText.trim() === '') {
+      throw new Error('n8n이 빈 응답을 반환했습니다. 워크플로우 실행 로그를 확인하세요.');
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(rawText);
+    } catch(_) {
+      throw new Error(`JSON 파싱 실패. n8n 응답: ${rawText.slice(0, 200)}`);
+    }
+
+    const { ok, url, message } = parsed;
     if (!ok) throw new Error(message || 'PPT 생성 실패');
 
     // n8n이 반환한 raw URL로 다운로드
