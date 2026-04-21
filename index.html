@@ -1017,7 +1017,7 @@ function buildPPTData() {
 // ── n8n Webhook URL ── 실제 URL로 교체하세요
 const PPT_WEBHOOK_URL = 'https://ontact.app.n8n.cloud/webhook/generate-ppt';
 const GH_REPO = 'jaehyun-pt/math_KPI';
-const PPT_RESULT_URL = `https://raw.githubusercontent.com/${GH_REPO}/main/data/ppt_result.pptx`;
+const PPT_RESULT_URL = `https://raw.githubusercontent.com/${GH_REPO}/ppt-output/ppt_result.pptx`;
 
 async function exportPPT() {
   if (!csvA.length) { alert('데이터가 없습니다.'); return; }
