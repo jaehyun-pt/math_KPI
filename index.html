@@ -169,6 +169,7 @@
     <div class="nav-lbl">페이지</div>
     <div class="nav-item on" onclick="gotoPage('page-dept')"><span>📊</span> 본부 성과지표</div>
     <div class="nav-item" onclick="gotoPage('page-inv')"><span>📈</span> 투자자용 지표</div>
+    <div class="nav-item" onclick="gotoPage('page-ppt')"><span>📋</span> PPT 보고서</div>
     <div class="nav-div"></div>
     <div class="nav-lbl">데이터</div>
     <div class="nav-item" onclick="gotoPage('page-upload')"><span>📂</span> 업로드</div>
@@ -295,6 +296,16 @@
           <h3>준비 중</h3>
           <p>동일한 raw data(metrics_A.csv)를 기반으로<br>투자자 관점의 성과지표를 추출할 예정입니다.<br><br><span style="color:var(--light);font-size:11px">기준 및 계산 로직 확정 후 구현됩니다.</span></p>
         </div>
+      </div>
+
+      <!-- ═══ PPT 보고서 ═══ -->
+      <div id="page-ppt" class="page">
+        <iframe
+          id="ppt-iframe"
+          src="ppt.html"
+          style="width:100%;height:calc(100vh - 52px);border:none;display:block;"
+          allowfullscreen>
+        </iframe>
       </div>
 
     </main>
@@ -507,8 +518,11 @@ function gotoPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
   document.getElementById(id).classList.add('active');
-  const map={'page-dept':0,'page-inv':1,'page-upload':2};
+  const map={'page-dept':0,'page-inv':1,'page-ppt':2,'page-upload':3};
   document.querySelectorAll('.nav-item')[map[id]]?.classList.add('on');
+  const mainEl=document.querySelector('main');
+  if(id==='page-ppt'){mainEl.style.padding='0';mainEl.style.overflow='hidden';}
+  else{mainEl.style.padding='20px 24px';mainEl.style.overflow='auto';}
 }
 function switchSubTab(tab){
   ['team','mgr'].forEach(t=>{
