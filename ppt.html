@@ -3,140 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📊 PPT 보고서 생성기 — 수학본부 성과지표</title>
+<title>PPT 보고서 생성기</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
-:root{--p:#4FBCDA;--pd:#2a9ab8;--bg:#0f1117;--s:#1a1d27;--s2:#222535;--b:#2e3347;--t:#e8eaf0;--m:#6b7280;--ok:#22c55e;--wa:#f59e0b;--er:#ef4444}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+:root{
+  --bg:#f4f6fb; --surface:#fff; --surface2:#f0f2f8; --border:#e3e7f0;
+  --accent:#4a7cf0; --accent2:#18b87a; --accent3:#e8943a; --danger:#d94040;
+  --text:#1a1d2e; --muted:#7a82a0; --light:#b0bace;
+  --shadow:0 1px 4px rgba(30,40,80,.08);
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.wrap{max-width:860px;margin:20px auto;padding:0 20px 40px}
 
-
-
-/* ── Main layout ──────────────────────── */
-.wrap{max-width:900px;margin:16px auto;padding:0 20px}
-
-/* ── Status bar ──────────────────────── */
-.statusbar{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+/* ── Status bar ── */
+.statusbar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow)}
 .sitem{display:flex;align-items:center;gap:7px;font-size:12px}
-.sdot{width:8px;height:8px;border-radius:50%;background:var(--m);flex-shrink:0;transition:background .3s}
-.sdot.ok{background:var(--ok)}
-.sdot.wa{background:var(--wa);animation:pulse 1.5s infinite}
-.sdot.er{background:var(--er)}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--light);flex-shrink:0;transition:background .3s}
+.sdot.ok{background:var(--accent2)}
+.sdot.wa{background:var(--accent3);animation:pulse 1.5s infinite}
+.sdot.er{background:var(--danger)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.stext{color:var(--m)}
-.stext.ok{color:var(--t)}
-.sep{width:1px;height:18px;background:var(--b)}
+.stext{color:var(--muted);font-size:12px}
+.stext.ok{color:var(--text);font-weight:500}
+.sep{width:1px;height:18px;background:var(--border)}
 
-/* ── Data source card ────────────────── */
-.card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:22px;margin-bottom:16px}
-.ct{font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:7px}
-.ct em{color:var(--p);font-style:normal;font-size:13px}
-.src-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border-radius:8px;border:1px solid var(--b);margin-bottom:10px}
-.src-icon{font-size:22px;flex-shrink:0}
+/* ── Card ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.ct{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.ct em{color:var(--accent);font-style:normal;font-size:13px;margin-right:4px}
+
+/* ── Data source row ── */
+.src-row{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--surface2);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)}
+.src-icon{font-size:20px;flex-shrink:0}
 .src-info{flex:1;min-width:0}
-.src-info strong{font-size:13px;display:block;margin-bottom:2px}
-.src-info span{font-size:11px;color:var(--m)}
-.src-btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .2s;white-space:nowrap;flex-shrink:0;font-family:inherit}
-.btn-load{background:rgba(79,188,218,.1);border-color:rgba(79,188,218,.3);color:var(--p)}
-.btn-load:hover{background:rgba(79,188,218,.2)}
-.btn-up{background:var(--s);border-color:var(--b);color:var(--m);position:relative;overflow:hidden}
+.src-info strong{font-size:13px;display:block;margin-bottom:2px;color:var(--text)}
+.src-info span{font-size:11px;color:var(--muted)}
+.src-btn{padding:6px 13px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .15s;white-space:nowrap;font-family:inherit}
+.btn-load{background:rgba(74,124,240,.08);border-color:rgba(74,124,240,.3);color:var(--accent)}
+.btn-load:hover{background:rgba(74,124,240,.15)}
+.btn-up{background:var(--surface);border-color:var(--border);color:var(--muted);position:relative;overflow:hidden}
 .btn-up input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.btn-up:hover{border-color:var(--p);color:var(--p)}
-.ppt-fixed{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#86efac;display:flex;align-items:center;gap:8px}
+.btn-up:hover{border-color:var(--accent);color:var(--accent)}
+.ppt-fixed{background:rgba(24,184,122,.07);border:1px solid rgba(24,184,122,.2);border-radius:7px;padding:10px 13px;display:flex;align-items:center;gap:8px;font-size:12px;color:#0a8a5a;margin-top:8px}
+.auto-loaded{background:rgba(74,124,240,.07);border:1px solid rgba(74,124,240,.2);border-radius:7px;padding:10px 13px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--accent);margin-bottom:8px}
 
-/* ── Week settings ───────────────────── */
+/* ── Week settings ── */
 .wg{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
-.fg label{display:block;font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.fg select,.fg input{width:100%;background:var(--s2);border:1.5px solid var(--b);border-radius:7px;padding:9px 11px;color:var(--t);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s}
-.fg select:focus,.fg input:focus{border-color:var(--p)}
-.fg select option{background:var(--s2)}
+.fg label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.fg select,.fg input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color .15s}
+.fg select:focus,.fg input:focus{border-color:var(--accent)}
 
-/* ── DB upload section ───────────────── */
-.db-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.dbu{border:2px dashed var(--b);border-radius:10px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .25s;background:var(--s2);position:relative}
-.dbu:hover,.dbu.ov{border-color:var(--p);background:rgba(79,188,218,.05)}
-.dbu.ok{border-color:var(--ok);background:rgba(34,197,94,.05)}
+/* ── DB upload ── */
+.db-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.dbu{border:2px dashed var(--border);border-radius:9px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--surface)}
+.dbu:hover,.dbu.ov{border-color:var(--accent);background:rgba(74,124,240,.03)}
+.dbu.ok{border-color:var(--accent2);background:rgba(24,184,122,.04)}
 .dbu input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.dbu-icon{font-size:24px;margin-bottom:5px}
-.dbu-name{font-size:12px;font-weight:600;margin-bottom:2px}
-.dbu-desc{font-size:11px;color:var(--m);line-height:1.5}
+.dbu-icon{font-size:22px;margin-bottom:5px}
+.dbu-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.dbu-desc{font-size:11px;color:var(--muted);line-height:1.5}
 .dbu-st{margin-top:6px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block}
-.sw{background:rgba(107,114,128,.2);color:var(--m)}
-.so{background:rgba(34,197,94,.15);color:var(--ok)}
-.sowa{background:rgba(245,158,11,.15);color:var(--wa)}
+.sw{background:rgba(180,188,206,.2);color:var(--muted)}
+.so{background:rgba(24,184,122,.12);color:#0a8a5a}
+.tip{background:rgba(74,124,240,.05);border:1px solid rgba(74,124,240,.15);border-radius:7px;padding:10px 13px;font-size:11px;color:var(--muted);line-height:1.7;margin-top:4px}
+.tip strong{color:var(--accent)}
 
-/* ── Preview ─────────────────────────── */
+/* ── Preview ── */
 .pvs{display:none}
 .pvs.show{display:block}
-.pvsc{overflow-x:auto;border-radius:7px;border:1px solid var(--b)}
-table{width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono',monospace}
-th{background:var(--s2);color:var(--p);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;text-align:left;border-bottom:1px solid var(--b);white-space:nowrap}
-td{padding:6px 10px;border-bottom:1px solid rgba(46,51,71,.5);white-space:nowrap}
+.pvsc{overflow-x:auto;border-radius:7px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:11px;font-family:'IBM Plex Mono',monospace}
+th{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:7px 10px;text-align:left;border-bottom:2px solid var(--border)}
+td{padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text)}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(79,188,218,.03)}
-.nc{text-align:right;color:#a5b4fc}
-.pc{text-align:right;color:var(--p);font-weight:600}
+tr:hover td{background:rgba(74,124,240,.03)}
+.nc{text-align:right;color:var(--accent)}
+.pc{text-align:right;color:var(--accent2);font-weight:600}
 
-/* ── Generate button ─────────────────── */
-.gbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--p),var(--pd));border:none;border-radius:10px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 4px 20px rgba(79,188,218,.25)}
-.gbtn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(79,188,218,.4)}
+/* ── Generate button ── */
+.gbtn{width:100%;padding:13px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:all .2s;font-family:inherit}
+.gbtn:hover{background:#3568e0;transform:translateY(-1px);box-shadow:0 4px 16px rgba(74,124,240,.35)}
 .gbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
-.pbg{background:var(--s2);border-radius:100px;height:5px;overflow:hidden;margin:12px 0 5px}
-.pb{height:100%;background:linear-gradient(90deg,var(--p),#7dd3e8);border-radius:100px;width:0%;transition:width .4s ease}
-.pl{font-size:11px;color:var(--m);display:flex;justify-content:space-between}
-.pr{display:none}
-.pr.show{display:block}
-.lb{background:var(--s2);border:1px solid var(--b);border-radius:7px;padding:12px;max-height:130px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;display:none;margin-top:10px}
+.pbg{background:var(--surface2);border-radius:100px;height:5px;overflow:hidden;margin:12px 0 5px;border:1px solid var(--border)}
+.pb{height:100%;background:linear-gradient(90deg,var(--accent),#7ba8f8);border-radius:100px;width:0%;transition:width .3s}
+.pl{font-size:11px;color:var(--muted);display:flex;justify-content:space-between}
+.pr{display:none}.pr.show{display:block}
+.lb{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px;max-height:130px;overflow-y:auto;font-size:11px;font-family:'IBM Plex Mono',monospace;display:none;margin-top:10px}
 .lb.show{display:block}
-.li{color:var(--m)}.lo{color:var(--ok)}.lw{color:var(--wa)}.le{color:var(--er)}
-.db-btn{display:none;width:100%;padding:13px;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:10px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;align-items:center;justify-content:center;gap:9px;box-shadow:0 4px 18px rgba(34,197,94,.3);margin-top:10px;text-decoration:none}
+.li{color:var(--muted)}.lo{color:var(--accent2)}.lw{color:var(--accent3)}.le{color:var(--danger)}
+.db-btn{display:none;width:100%;padding:12px;background:var(--accent2);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;align-items:center;justify-content:center;gap:8px;margin-top:10px;transition:all .2s;font-family:inherit}
 .db-btn.show{display:flex}
-.db-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(34,197,94,.4)}
-.tip{background:rgba(79,188,218,.07);border:1px solid rgba(79,188,218,.2);border-radius:7px;padding:10px 14px;font-size:11px;color:#93c5d6;line-height:1.8;margin-top:12px}
-.tip strong{color:var(--p)}
-.divider{height:1px;background:var(--b);margin:6px 0 18px}
+.db-btn:hover{background:#0da06a;transform:translateY(-1px);box-shadow:0 4px 16px rgba(24,184,122,.35)}
+.divider{height:1px;background:var(--border);margin:6px 0 16px}
 @media(max-width:600px){.wg{grid-template-columns:1fr 1fr}.db-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
-
-
 <div class="wrap">
 
   <!-- Status bar -->
   <div class="statusbar">
-    <div class="sitem">
-      <div class="sdot" id="dotA"></div>
-      <span class="stext" id="txtA">metrics_A.csv 대기 중</span>
-    </div>
+    <div class="sitem"><div class="sdot" id="dotA"></div><span class="stext" id="txtA">metrics_A.csv 대기 중</span></div>
     <div class="sep"></div>
-    <div class="sitem">
-      <div class="sdot" id="dotB"></div>
-      <span class="stext" id="txtB">metrics_B.csv 대기 중</span>
-    </div>
+    <div class="sitem"><div class="sdot" id="dotB"></div><span class="stext" id="txtB">metrics_B.csv 대기 중</span></div>
     <div class="sep"></div>
-    <div class="sitem">
-      <div class="sdot ok"></div>
-      <span class="stext ok">PPT 템플릿 내장됨</span>
-    </div>
+    <div class="sitem"><div class="sdot ok"></div><span class="stext ok">PPT 템플릿 내장됨</span></div>
     <div class="sep"></div>
-    <div class="sitem">
-      <div class="sdot" id="dotDB"></div>
-      <span class="stext" id="txtDB">DB(이탈·매출) 대기 중</span>
-    </div>
+    <div class="sitem"><div class="sdot" id="dotDB"></div><span class="stext" id="txtDB">DB(이탈·매출) 대기 중</span></div>
   </div>
 
   <!-- Data Source -->
   <div class="card">
     <div class="ct"><em>①</em> 데이터 소스 — metrics_A &amp; B</div>
 
+    <!-- 대시보드에서 자동 전달된 경우 표시 -->
+    <div class="auto-loaded" id="autoLoadedBanner" style="display:none">
+      <span>✅</span>
+      <span id="autoLoadedText"><strong>대시보드에서 데이터 자동 적용됨</strong></span>
+    </div>
+
     <div class="src-row">
       <div class="src-icon">🔗</div>
       <div class="src-info">
-        <strong>GitHub 자동 로드 (권장)</strong>
-        <span>jaehyun-pt.github.io/math_KPI 저장소에서 metrics_A.csv, metrics_B.csv 자동 불러오기</span>
+        <strong>GitHub 자동 로드</strong>
+        <span>저장소에서 metrics_A.csv, metrics_B.csv 불러오기</span>
       </div>
       <button class="src-btn btn-load" onclick="autoLoad()">↻ 자동 로드</button>
     </div>
@@ -148,12 +140,8 @@ tr:hover td{background:rgba(79,188,218,.03)}
         <span id="manualStatus">metrics_A.csv, metrics_B.csv 직접 선택</span>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="src-btn btn-up" title="metrics_A.csv 업로드">
-          <input type="file" accept=".csv" onchange="readCSV(event,'A')">A 업로드
-        </button>
-        <button class="src-btn btn-up" title="metrics_B.csv 업로드">
-          <input type="file" accept=".csv" onchange="readCSV(event,'B')">B 업로드
-        </button>
+        <button class="src-btn btn-up"><input type="file" accept=".csv" onchange="readCSV(event,'A')">A 업로드</button>
+        <button class="src-btn btn-up"><input type="file" accept=".csv" onchange="readCSV(event,'B')">B 업로드</button>
       </div>
     </div>
 
@@ -163,7 +151,7 @@ tr:hover td{background:rgba(79,188,218,.03)}
     </div>
   </div>
 
-  <!-- DB Upload (이탈률 / 매출액) -->
+  <!-- DB Upload -->
   <div class="card">
     <div class="ct"><em>②</em> DB 업로드 — 누적 이탈률 &amp; 매출액</div>
     <div class="db-grid">
@@ -182,7 +170,7 @@ tr:hover td{background:rgba(79,188,218,.03)}
         <div class="dbu-st sw" id="stSales">대기 중 (선택사항)</div>
       </div>
     </div>
-    <div class="tip">💡 이탈률·매출액 DB는 <strong>선택사항</strong>입니다. 업로드하면 슬라이드 18(매출)·19(이탈)에 자동 삽입됩니다.<br>컬럼명은 자동 인식합니다 (사원명, 매출액, 기초PT, 이탈PT, 이탈률 등).</div>
+    <div class="tip">💡 이탈률·매출액 DB는 <strong>선택사항</strong>입니다. 업로드하면 슬라이드 18(매출)·19(이탈)에 자동 삽입됩니다.</div>
   </div>
 
   <!-- Week Settings -->
@@ -202,7 +190,7 @@ tr:hover td{background:rgba(79,188,218,.03)}
 
   <!-- Preview -->
   <div class="card pvs" id="pvsec">
-    <div class="ct"><em>④</em> 데이터 미리보기 <span id="pvb" style="font-size:11px;background:rgba(79,188,218,.15);padding:2px 8px;border-radius:20px;color:var(--p);font-weight:600;margin-left:8px"></span></div>
+    <div class="ct"><em>④</em> 데이터 미리보기 <span id="pvb" style="font-size:11px;background:rgba(74,124,240,.1);padding:2px 8px;border-radius:20px;color:var(--accent);font-weight:600;margin-left:8px"></span></div>
     <div class="pvsc" id="pvt"></div>
   </div>
 
@@ -219,7 +207,6 @@ tr:hover td{background:rgba(79,188,218,.03)}
   </div>
 
 </div>
-
 <script>
 // ═══════════════════════════════════════════════════
 // EMBEDDED PPTX TEMPLATE (Base64)
@@ -233,21 +220,46 @@ let pA=[], pB=[], pLeave=[], pSales=[];
 let hasA=false, hasB=false, hasLeave=false, hasSales=false;
 
 // ═══════════════════════════════════════════════════
+// RECEIVE DATA FROM PARENT DASHBOARD (postMessage)
+// ═══════════════════════════════════════════════════
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'METRICS_DATA') return;
+  const { csvA, csvB } = e.data;
+  if (csvA && csvA.length) {
+    pA = csvA; hasA = true;
+    dot('A','ok'); txt2('A', `metrics_A — ${pA.length}행 (대시보드에서 자동 적용)`);
+    log(`대시보드에서 metrics_A 자동 적용: ${pA.length}행`, 'o');
+  }
+  if (csvB && csvB.length) {
+    pB = csvB; hasB = true;
+    dot('B','ok'); txt2('B', `metrics_B — ${pB.length}행 (대시보드에서 자동 적용)`);
+    log(`대시보드에서 metrics_B 자동 적용: ${pB.length}행`, 'o');
+  }
+  if ((csvA && csvA.length) || (csvB && csvB.length)) {
+    const banner = document.getElementById('autoLoadedBanner');
+    const bannerTxt = document.getElementById('autoLoadedText');
+    banner.style.display = 'flex';
+    bannerTxt.innerHTML = `<strong>대시보드에서 데이터 자동 적용됨</strong> — A: ${pA.length}행 / B: ${pB.length}행`;
+  }
+  check(); preview();
+});
+
+// ═══════════════════════════════════════════════════
 // AUTO LOAD from GitHub raw
 // ═══════════════════════════════════════════════════
 async function autoLoad() {
-  const base = 'https://raw.githubusercontent.com/jaehyun-pt/math_KPI/main/';
+  const base = 'https://raw.githubusercontent.com/jaehyun-pt/math_KPI/main/data/';
   log('GitHub에서 데이터 자동 로드 중...');
   dot('A','wa'); txt('A','metrics_A.csv 로드 중...');
   dot('B','wa'); txt('B','metrics_B.csv 로드 중...');
   try {
     const [rA, rB] = await Promise.all([
-      fetch(base + 'metrics_A.csv'),
-      fetch(base + 'metrics_B.csv')
+      fetch(base + 'metrics_A.csv?t=' + Date.now()),
+      fetch(base + 'metrics_B.csv?t=' + Date.now())
     ]);
-    if(rA.ok) { const t=await rA.text(); pA=parseCSV(t); hasA=true; dot('A','ok'); txt('A',`metrics_A.csv — ${pA.length}행`,'ok'); log(`metrics_A.csv 로드 완료 (${pA.length}행)`,'o'); }
+    if(rA.ok){ const t=await rA.text(); pA=parseCSV(t); hasA=true; dot('A','ok'); txt2('A',`metrics_A.csv — ${pA.length}행`); log(`A 로드: ${pA.length}행`,'o'); }
     else { dot('A','er'); txt('A','A 로드 실패 — 수동 업로드 사용'); log('metrics_A.csv 로드 실패: '+rA.status,'e'); }
-    if(rB.ok) { const t=await rB.text(); pB=parseCSV(t); hasB=true; dot('B','ok'); txt('B',`metrics_B.csv — ${pB.length}행`,'ok'); log(`metrics_B.csv 로드 완료 (${pB.length}행)`,'o'); }
+    if(rB.ok){ const t=await rB.text(); pB=parseCSV(t); hasB=true; dot('B','ok'); txt2('B',`metrics_B.csv — ${pB.length}행`); log(`B 로드: ${pB.length}행`,'o'); }
     else { dot('B','er'); txt('B','B 로드 실패 — 수동 업로드 사용'); log('metrics_B.csv 로드 실패: '+rB.status,'e'); }
     check(); preview();
   } catch(e) { log('자동 로드 오류: '+e.message,'e'); dot('A','er'); dot('B','er'); }
@@ -256,69 +268,74 @@ async function autoLoad() {
 // ═══════════════════════════════════════════════════
 // MANUAL CSV UPLOAD
 // ═══════════════════════════════════════════════════
-function readCSV(e,t) { const f=e.target.files[0]; if(f) doCSV(f,t); }
-function dropDB(e,t) { e.preventDefault(); document.getElementById('z'+cap(t)).classList.remove('ov'); const f=e.dataTransfer.files[0]; if(f) readDB({target:{files:[f]}},t); }
-function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+function readCSV(e,t){ const f=e.target.files[0]; if(f) doCSV(f,t); }
+function dropDB(e,t){ e.preventDefault(); document.getElementById('z'+cap(t)).classList.remove('ov'); const f=e.dataTransfer.files[0]; if(f) readDB({target:{files:[f]}},t); }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
-function doCSV(f,t) {
+function doCSV(f,t){
   const r=new FileReader();
   r.onload=ev=>{
-    const txt=ev.target.result;
-    if(t==='A'){pA=parseCSV(txt);hasA=true;dot('A','ok');txt2('A',`metrics_A — ${pA.length}행`);log(`A 업로드: ${pA.length}행`,'o');}
-    else{pB=parseCSV(txt);hasB=true;dot('B','ok');txt2('B',`metrics_B — ${pB.length}행`);log(`B 업로드: ${pB.length}행`,'o');}
+    const text=ev.target.result;
+    if(t==='A'){pA=parseCSV(text);hasA=true;dot('A','ok');txt2('A',`metrics_A — ${pA.length}행`);log(`A 업로드: ${pA.length}행`,'o');}
+    else{pB=parseCSV(text);hasB=true;dot('B','ok');txt2('B',`metrics_B — ${pB.length}행`);log(`B 업로드: ${pB.length}행`,'o');}
     check(); preview();
   };
   r.readAsText(f,'utf-8');
 }
 
-function readDB(e,type) {
+function readDB(e,type){
   const f=e.target.files[0]; if(!f)return;
   const r=new FileReader();
   const isExcel=/\.(xlsx|xls)$/i.test(f.name);
-  if(isExcel) {
-    r.onload=ev=>{ parseExcel(ev.target.result,type,f.name); };
-    r.readAsArrayBuffer(f);
-  } else {
-    r.onload=ev=>{
-      const rows=parseCSV(ev.target.result);
-      setDB(rows,type,f.name);
-    };
-    r.readAsText(f,'utf-8');
-  }
+  if(isExcel){ r.onload=ev=>{ parseExcel(ev.target.result,type,f.name); }; r.readAsArrayBuffer(f); }
+  else{ r.onload=ev=>{ const rows=parseCSV(ev.target.result); setDB(rows,type,f.name); }; r.readAsText(f,'utf-8'); }
 }
 
-function setDB(rows,type,fname) {
+function setDB(rows,type,fname){
   if(type==='leave'){pLeave=rows;hasLeave=true;markDB('Leave',fname,rows.length);}
   else{pSales=rows;hasSales=true;markDB('Sales',fname,rows.length);}
   dot('DB','ok');
-  txt('DB',`DB 로드됨 (이탈: ${hasLeave?pLeave.length:'-'} / 매출: ${hasSales?pSales.length:'-'})`, 'ok');
+  txt('DB',`DB 로드됨 (이탈: ${hasLeave?pLeave.length:'-'} / 매출: ${hasSales?pSales.length:'-'})`,'ok');
   log(`${type==='leave'?'이탈률':'매출액'} DB 로드: ${rows.length}행`,'o');
   check();
 }
 
-function markDB(id,fname,cnt) {
+function markDB(id,fname,cnt){
   const z=document.getElementById('z'+id); if(z)z.classList.add('ok');
   const i=document.getElementById('i'+id); if(i)i.textContent='✅';
   const s=document.getElementById('st'+id); if(s){s.textContent=`${fname} (${cnt}행)`;s.className='dbu-st so';}
 }
 
-// Excel parser (SheetJS)
-async function parseExcel(buf,type,fname) {
-  try {
-    // Dynamically load SheetJS
-    if(!window.XLSX) {
-      await new Promise((res,rej)=>{
-        const s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-        s.onload=res; s.onerror=rej; document.head.appendChild(s);
-      });
-    }
-    const wb=XLSX.read(buf,{type:'array'});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
-    setDB(rows,type,fname);
-  } catch(e) { log('Excel 파싱 오류: '+e.message,'e'); }
+// ═══════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════
+function dot(id,cls){ const e=document.getElementById('dot'+id); if(e){e.className='sdot '+cls;} }
+function txt(id,msg,cls){ const e=document.getElementById('txt'+id); if(e){e.textContent=msg;e.className='stext '+(cls||'');} }
+function txt2(id,msg){ txt(id,msg,'ok'); }
+function check(){ document.getElementById('gBtn').disabled=!(hasA&&hasB); }
+function preview(){
+  const d=pA.length?pA:pB;
+  if(!d.length) return;
+  document.getElementById('pvsec').classList.add('show');
+  document.getElementById('pvb').textContent=(pA.length?'metrics_A':'metrics_B')+' · '+d.length+'행';
+  const h=Object.keys(d[0]),rows=d.slice(0,6);
+  let t='<table><thead><tr>'+h.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{t+='<tr>';h.forEach(k=>{const v=r[k]||'';const cls=v.includes('%')?'pc':(!isNaN(v)&&v!=='')?'nc':'';t+=`<td class="${cls}">${v}</td>`;});t+='</tr>';});
+  document.getElementById('pvt').innerHTML=t+'</tbody></table>';
 }
+function log(msg,t='i'){
+  const b=document.getElementById('logb');b.classList.add('show');
+  const d=document.createElement('div');d.className='l'+t;
+  d.textContent=(t==='o'?'✓ ':t==='w'?'⚠ ':t==='e'?'✗ ':'› ')+msg;
+  b.appendChild(d);b.scrollTop=b.scrollHeight;
+}
+function prog(p,lbl){
+  document.getElementById('prow').classList.add('show');
+  document.getElementById('pbr').style.width=p+'%';
+  document.getElementById('plbl').textContent=lbl;
+  document.getElementById('ppct').textContent=p+'%';
+}
+
 
 // ═══════════════════════════════════════════════════
 // CSV PARSER
@@ -759,6 +776,7 @@ function* getTags(xml,tag) {
 function escX(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
 </script>
 </body>
 </html>
