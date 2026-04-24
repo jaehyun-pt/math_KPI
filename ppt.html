@@ -220,6 +220,18 @@ let pA=[], pB=[], pLeave=[], pSales=[];
 let hasA=false, hasB=false, hasLeave=false, hasSales=false;
 
 // ═══════════════════════════════════════════════════
+// AUTO LOAD ON PAGE START
+// ═══════════════════════════════════════════════════
+(async function initLoad() {
+  // iframe 환경: 부모가 postMessage로 데이터를 보내줌
+  // standalone 환경: GitHub에서 자동 fetch
+  // 1.5초 대기 후 데이터가 없으면 GitHub fetch 실행
+  setTimeout(async () => {
+    if (!hasA || !hasB) await autoLoad();
+  }, 1500);
+})();
+
+// ═══════════════════════════════════════════════════
 // RECEIVE DATA FROM PARENT DASHBOARD (postMessage)
 // ═══════════════════════════════════════════════════
 window.addEventListener('message', function(e) {
@@ -473,6 +485,66 @@ function buildData(rA,rB,rLeave,rSales,mo,wk) {
   D.mR=D.c.week?rA.filter(byMo):rA; if(!D.mR.length)D.mR=rA;
   D.qR=rA;
 
+  // ── 분기 내 선택 주차까지의 주차 목록 (누적 이탈률 계산용) ──
+  // metrics_A의 주차 컬럼에서 같은 분기 내 현재 주차 이전 주차 추출
+  const Q=m=>(+m<=3?1:+m<=6?2:+m<=9?3:4);
+  const curQ=Q(mo);
+  const allWeekLabels=D.c.week
+    ?[...new Set(rA.map(r=>r[D.c.week]).filter(Boolean))]
+    :[];
+  // 분기 내 주차 필터: 같은 분기이면서 선택 주차 이하
+  const parseWeekNum=(label)=>{
+    const mm=label.match(/(\d+)월/); const ww=label.match(/(\d+)주차/);
+    return mm&&ww?{m:+mm[1],w:+ww[1]}:null;
+  };
+  const qWeekLabels=allWeekLabels.filter(label=>{
+    const p=parseWeekNum(label); if(!p) return false;
+    if(Q(p.m)!==curQ) return false;
+    if(p.m<+mo) return true;
+    if(p.m===+mo&&p.w<=+wk) return true;
+    return false;
+  });
+  D.qWeekLabels=qWeekLabels.length?qWeekLabels:[...allWeekLabels];
+
+  // ── 팀원별 누적 이탈률 계산 (분기 내 주차별 이탈률 합산) ──
+  // metrics_B 팀원 목록 기준, metrics_A에서 팀원명 매칭 후 주차별 이탈률 합산
+  if(rB.length && D.mc) {
+    const mc=D.mc;
+    // metrics_A에서 팀원 이름이 들어있는 컬럼 탐색 (선생님, 팀원, 담당자, 이름 등)
+    const aNames=Object.keys(rA[0]||{});
+    const mgrColA=aNames.find(c=>['선생님','팀원','담당자','manager_name','이름'].some(k=>c.replace(/\s/g,'').includes(k.replace(/\s/g,'')))) || null;
+    const weekColA=D.c.week;
+    const leaveRateColA=D.c.leaveRate;
+
+    D.cumLeaveRows = rB.map(mbr=>{
+      const name=(mbr[mc.name]||'').trim();
+      if(!name) return null;
+      let cumRate=0;
+      let weekCount=0;
+      D.qWeekLabels.forEach(wkLabel=>{
+        // metrics_A에서 해당 팀원 + 해당 주차 행 찾기
+        const row=rA.find(r=>{
+          const rName=(mgrColA?r[mgrColA]:''||'').trim();
+          const rWk=(weekColA?r[weekColA]:'').replace(/\s/g,'');
+          const matchWk=rWk===wkLabel.replace(/\s/g,'');
+          const matchName=rName===name;
+          return matchName && matchWk;
+        });
+        if(row && leaveRateColA){
+          const lr=N(row[leaveRateColA]);
+          if(!isNaN(lr)){ cumRate+=lr; weekCount++; }
+        }
+      });
+      return {
+        name,
+        dept:(mbr[mc.dept]||'').trim(),
+        base:N(mbr[mc.base])||0,
+        leavePT:N(mbr[mc.leavePT])||0,
+        cumLeaveRate:weekCount>0?cumRate:null
+      };
+    }).filter(Boolean).filter(r=>r.name);
+  }
+
   const agg=rows=>{
     let e=0,r=0,n=0,f=0,ns=0,nf=0;
     rows.forEach(row=>{e+=N(row[D.c.expire]);r+=N(row[D.c.renew]);n+=N(row[D.c.noRenew]);
@@ -695,20 +767,46 @@ function slSales(xml,D,mo) {
 // Slide 19: leave rate — 3 tables × 17 data rows
 // Uses dedicated leave DB if available, falls back to rB
 function slLeave(xml,D,mo) {
-  const src=D.rLeave.length?D.rLeave:D.rB;
-  const c=D.rLeave.length?D.lc:D.mc;
-  if(!src||!src.length||!c) return xml;
-  const valid=src.filter(r=>N(r[c.base||c.leavePT||''])>0||r[c.name]);
-  const sorted=valid.sort((a,b)=>N(a[c.leaveRate])-N(b[c.leaveRate]));
+  let rows=[];
+  if(D.rLeave&&D.rLeave.length&&D.lc) {
+    // DB 업로드된 경우: DB 데이터 사용
+    const c=D.lc;
+    rows=D.rLeave
+      .filter(r=>r[c.name])
+      .map(r=>({
+        name:r[c.name]||'',
+        dept:r[c.dept]||'',
+        base:N(r[c.base]),
+        leavePT:N(r[c.leavePT]),
+        cumLeaveRate:c.leaveRate&&r[c.leaveRate]?N(r[c.leaveRate]):null
+      }));
+    rows.sort((a,b)=>(a.cumLeaveRate??Infinity)-(b.cumLeaveRate??Infinity));
+  } else if(D.cumLeaveRows&&D.cumLeaveRows.length) {
+    // DB 없는 경우: 분기 내 주차별 이탈률 합산 사용
+    rows=D.cumLeaveRows
+      .filter(r=>r.cumLeaveRate!==null)
+      .sort((a,b)=>(a.cumLeaveRate??Infinity)-(b.cumLeaveRate??Infinity));
+  } else if(D.rB&&D.rB.length&&D.mc) {
+    // fallback: rB의 이탈률 컬럼
+    const c=D.mc;
+    rows=D.rB.filter(r=>r[c.name]).map(r=>({
+      name:r[c.name]||'',dept:r[c.dept]||'',
+      base:N(r[c.base]),leavePT:N(r[c.leavePT]),
+      cumLeaveRate:c.leaveRate&&r[c.leaveRate]?N(r[c.leaveRate]):null
+    }));
+    rows.sort((a,b)=>(a.cumLeaveRate??Infinity)-(b.cumLeaveRate??Infinity));
+  }
+  if(!rows.length) return xml;
   const sz=17;
   [0,1,2].forEach(ti=>{
-    sorted.slice(ti*sz,(ti+1)*sz).forEach((r,i)=>{
+    rows.slice(ti*sz,(ti+1)*sz).forEach((r,i)=>{
       const ri=i+1;
-      xml=sc(xml,ti,ri,0,String(ti*sz+i+1));
-      xml=sc(xml,ti,ri,1,r[c.name]||'');
-      xml=sc(xml,ti,ri,2,S(N(r[c.base])));
-      xml=sc(xml,ti,ri,3,S(N(r[c.leavePT])));
-      xml=sc(xml,ti,ri,4,c.leaveRate&&r[c.leaveRate]?P(r[c.leaveRate]):'-');
+      const rankNum=ti*sz+i+1;
+      xml=sc(xml,ti,ri,0,String(rankNum));
+      xml=sc(xml,ti,ri,1,r.name||'');
+      xml=sc(xml,ti,ri,2,S(r.base));
+      xml=sc(xml,ti,ri,3,S(r.leavePT));
+      xml=sc(xml,ti,ri,4,r.cumLeaveRate!==null?P(r.cumLeaveRate):'-');
     });
   });
   return xml;
