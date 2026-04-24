@@ -233,7 +233,6 @@
             </div>
             <button class="btn btn-p" onclick="runTeam()">🔍 분석</button>
             <button class="btn btn-s" onclick="exportData('team')">⬇ CSV</button>
-            <button class="btn btn-s" id="ppt-btn" style="display:none;background:#e8f0fe;color:#3b6ef0;border-color:#b0c4f8;" onclick="exportPPT()">📊 PPT 보고서</button>
           </div>
           <div class="pstrip" id="t-strip">
             <span>📅 <strong id="t-ps-w"></strong></span><span class="sep">|</span>
@@ -521,8 +520,23 @@ function gotoPage(id){
   const map={'page-dept':0,'page-inv':1,'page-ppt':2,'page-upload':3};
   document.querySelectorAll('.nav-item')[map[id]]?.classList.add('on');
   const mainEl=document.querySelector('main');
-  if(id==='page-ppt'){mainEl.style.padding='0';mainEl.style.overflow='hidden';}
-  else{mainEl.style.padding='20px 24px';mainEl.style.overflow='auto';}
+  if(id==='page-ppt'){
+    mainEl.style.padding='0';
+    mainEl.style.overflow='hidden';
+    // 데이터 로드됐으면 iframe으로 전달
+    const iframe=document.getElementById('ppt-iframe');
+    if(iframe && (csvA.length || csvB.length)){
+      const send=()=>{
+        iframe.contentWindow.postMessage({type:'METRICS_DATA',csvA,csvB},'*');
+      };
+      // iframe 로드 완료 후 전송
+      if(iframe.contentDocument && iframe.contentDocument.readyState==='complete') send();
+      else iframe.onload=send;
+    }
+  } else {
+    mainEl.style.padding='20px 24px';
+    mainEl.style.overflow='auto';
+  }
 }
 function switchSubTab(tab){
   ['team','mgr'].forEach(t=>{
@@ -622,8 +636,6 @@ function runTeam(){
   const showChart=filterAll&&teamRows.length>1;
   document.getElementById('t-cmp').style.display=showChart?'block':'none';
   if(showChart) renderCompareCharts(teamRows,teams);
-  // PPT 버튼 표시
-  document.getElementById('ppt-btn').style.display='inline-flex';
 }
 
 // ═══════════════════════════════════════════
@@ -897,246 +909,7 @@ function exportData(tab){
 // ═══════════════════════════════════════════
 loadAll();
 
-// ═══════════════════════════════════════════
-//  PPT DATA BUILDER
-//  대시보드에서 계산된 결과를 generate_ppt.py가
-//  읽을 수 있는 JSON 포맷으로 직렬화
-// ═══════════════════════════════════════════
-function buildPPTData() {
-  const contracts = prepRows(csvA);
-  const isoKey    = parseInt(document.getElementById('tw-sel').value);
-  const selWeek   = allWeeks.find(w => w.isoKey === isoKey);
-  if (!selWeek) return null;
 
-  // 사용할 B 팀원 목록
-  const validMgrs = validManagers;
-
-  // 팀→실 이름 변환 (슬라이드4-9용)
-  const TEAM_TO_SILL = {
-    '초등팀':'초등실','중등1A팀':'중등1실','중등2A팀':'중등2실','중등3A팀':'중등3실',
-    '고등1A팀':'고등1실','고등2A팀':'고등2실','고등3A팀':'고등3실',
-    'B2B사업팀':'B2B사업실','주말팀':'주말팀'
-  };
-
-  // 기간별 주차 목록
-  const qWeeks  = allWeeks.filter(w => w.quarterKey === selWeek.quarterKey && w.isoKey <= selWeek.isoKey);
-  const mWeeks  = allWeeks.filter(w => w.monthKey   === selWeek.monthKey   && w.isoKey <= selWeek.isoKey);
-  const wWeeks  = [selWeek];
-
-  // 팀 목록 (수학_주말 → 주말팀 포함)
-  const allTeams = sortTeams([...new Set(contracts.map(c => c._team).filter(Boolean))]);
-
-  function metricsByTeam(weeks) {
-    return allTeams.map(t => ({
-      dept: t,
-      ...aggWeeks(contracts.filter(c => c._team === t), weeks)
-    }));
-  }
-
-  function metricsBySill(weeks) {
-    return metricsByTeam(weeks).map(r => ({
-      ...r,
-      dept: TEAM_TO_SILL[r.dept] || r.dept,
-      refund_rate: r.calc_due_pt > 0
-        ? Math.round(r.calc_refund_pt / r.calc_due_pt * 10000) / 100
-        : null
-    }));
-  }
-
-  // 전체 합산
-  const sumW = aggWeeks(contracts, wWeeks);
-  const sumM = aggWeeks(contracts, mWeeks);
-  const sumQ = aggWeeks(contracts, qWeeks);
-
-  // 슬라이드3: 최근 4주차
-  const idx      = allWeeks.findIndex(w => w.isoKey === selWeek.isoKey);
-  const recent4  = allWeeks.slice(Math.max(0, idx - 3), idx + 1);
-  const trend = recent4.map(w => {
-    const m = aggWeeks(contracts, [w]);
-    return { label: w.label, renew_rate: m.renew_rate, new_full_churn_rate: m.new_full_churn_rate };
-  });
-
-  // 팀원별 분기 누적
-  let mgrContracts = contracts;
-  if (validMgrs.size > 0) mgrContracts = contracts.filter(c => validMgrs.has(c._mgr));
-  mgrContracts = mgrContracts.map(c => ({ ...c, _mgr: c._mgr || (c._team ? c._team + ' 퇴사자 외' : '퇴사자 외') }));
-  const allMgrs = [...new Set(mgrContracts.map(c => c._mgr).filter(Boolean))];
-
-  const mgrRenewQ = allMgrs.map(m => ({
-    mgr: m,
-    team: mgrContracts.find(c => c._mgr === m)?._team || '',
-    ...aggWeeks(mgrContracts.filter(c => c._mgr === m), qWeeks)
-  }));
-
-  const mgrChurnM = allMgrs.map(m => ({
-    mgr: m,
-    team: mgrContracts.find(c => c._mgr === m)?._team || '',
-    ...aggWeeks(mgrContracts.filter(c => c._mgr === m), mWeeks)
-  }));
-
-  // slide2: 환불률 = calc_refund_pt / calc_due_pt
-  const mid_refund_rate = sumW.calc_due_pt > 0
-    ? Math.round(sumW.calc_refund_pt / sumW.calc_due_pt * 10000) / 100 : null;
-
-  return {
-    selected_week: selWeek.label,
-    selected_quarter: selWeek.quarterKey,
-
-    // Slide 1
-    slide1_weekly:    { calc_due_pt: sumW.calc_due_pt, calc_extend_pt: sumW.calc_extend_pt, calc_nonrenew_pt: sumW.calc_nonrenew_pt, calc_refund_pt: sumW.calc_refund_pt, renew_rate: sumW.renew_rate, churn_rate: sumW.churn_rate },
-    slide1_quarterly: { calc_due_pt: sumQ.calc_due_pt, calc_extend_pt: sumQ.calc_extend_pt, calc_nonrenew_pt: sumQ.calc_nonrenew_pt, calc_refund_pt: sumQ.calc_refund_pt, renew_rate: sumQ.renew_rate, churn_rate: sumQ.churn_rate },
-    slide1_new_refund: { open_pt: sumW.open_pt, new_full_churn_pt: sumW.new_full_churn_pt, new_full_churn_rate_weekly: sumW.new_full_churn_rate, new_full_churn_rate_monthly: sumM.new_full_churn_rate, new_full_churn_rate_quarterly: sumQ.new_full_churn_rate },
-
-    // Slide 2 (수학만)
-    slide2_math: { renew_rate: sumW.renew_rate, extend_rate: sumW.extend_rate, churn_rate: sumW.churn_rate, mid_refund_rate, new_full_churn_rate: sumW.new_full_churn_rate },
-
-    // Slide 3 차트
-    slide3_trend: {
-      week_labels:  trend.map(t => t.label),
-      renew_rates:  trend.map(t => t.renew_rate),
-      refund_rates: trend.map(t => t.new_full_churn_rate)
-    },
-
-    // Slides 4-6 실별 재수강률
-    slide_dept_renew_weekly:    metricsBySill(wWeeks),
-    slide_dept_renew_monthly:   metricsBySill(mWeeks),
-    slide_dept_renew_quarterly: metricsBySill(qWeeks),
-
-    // Slides 7-9 실별 신규전액환불률
-    slide_dept_refund_weekly:    metricsBySill(wWeeks),
-    slide_dept_refund_monthly:   metricsBySill(mWeeks),
-    slide_dept_refund_quarterly: metricsBySill(qWeeks),
-
-    // Slides 10-12 팀별 재수강률 순위
-    slide_team_renew_weekly:    metricsByTeam(wWeeks),
-    slide_team_renew_monthly:   metricsByTeam(mWeeks),
-    slide_team_renew_quarterly: metricsByTeam(qWeeks),
-
-    // Slides 13-15 팀별 신규전액환불률 순위
-    slide_team_refund_weekly:    metricsByTeam(wWeeks),
-    slide_team_refund_monthly:   metricsByTeam(mWeeks),
-    slide_team_refund_quarterly: metricsByTeam(qWeeks),
-
-    // Slides 16-17 팀원별 재수강률 (분기 누적)
-    slide_mgr_renew_quarterly: mgrRenewQ,
-
-    // Slide 18 매출액 빈칸 (데이터 없음)
-    slide18_blank: true,
-
-    // Slide 19 팀원별 이탈률 (월 누적)
-    slide_mgr_churn_monthly: mgrChurnM,
-  };
-}
-
-// ── n8n Webhook URL ── 실제 URL로 교체하세요
-const PPT_WEBHOOK_URL = 'https://ontact.app.n8n.cloud/webhook/generate-ppt';
-const GH_REPO = 'jaehyun-pt/math_KPI';
-const PPT_RESULT_URL = `https://raw.githubusercontent.com/${GH_REPO}/ppt-output/ppt_result.pptx`;
-
-async function exportPPT() {
-  if (!csvA.length) { alert('데이터가 없습니다.'); return; }
-  const isoKey = parseInt(document.getElementById('tw-sel').value);
-  if (!isoKey) { alert('주차를 선택하세요.'); return; }
-
-  const data = buildPPTData();
-  if (!data) { alert('데이터 준비 실패'); return; }
-
-  const btn   = document.getElementById('ppt-btn');
-  const start = Date.now();
-  btn.disabled = true;
-
-  // 경과 시간 표시
-  const timer = setInterval(() => {
-    const s = Math.floor((Date.now() - start) / 1000);
-    btn.textContent = `⏳ PPT 생성 중… (${Math.floor(s/60)}:${String(s%60).padStart(2,'0')})`;
-  }, 1000);
-
-  try {
-    // ── 1단계: n8n으로 push 요청 ──────────────────
-    btn.textContent = '⏳ 요청 전송 중…';
-    const res = await fetch(PPT_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    const rawText = await res.text();
-    console.log('[PPT] n8n 응답:', res.status, rawText);
-    if (!res.ok) throw new Error(`n8n 오류 (${res.status}): ${rawText.slice(0,200)}`);
-
-    let parsed = {};
-    try { parsed = JSON.parse(rawText); } catch(_) {}
-    if (parsed.ok === false) throw new Error(parsed.message || 'push 실패');
-
-    // ── 2단계: 브라우저에서 직접 GitHub Actions 폴링 ──
-    // push 직후 Actions 트리거까지 잠깐 대기
-    await sleep(6000);
-
-    // Actions Run 조회 (public 레포 → 토큰 불필요)
-    let runId = null;
-    for (let i = 0; i < 12; i++) {
-      await sleep(3000);
-      try {
-        const r = await fetch(
-          `https://api.github.com/repos/${GH_REPO}/actions/runs?per_page=5&branch=main`,
-          { headers: { 'Accept': 'application/vnd.github+json' } }
-        );
-        const j = await r.json();
-        const run = (j.workflow_runs || []).find(r =>
-          r.name === 'PPT 보고서 생성' &&
-          ['queued','in_progress','completed'].includes(r.status)
-        );
-        if (run) { runId = run.id; console.log('[PPT] Run ID:', runId); break; }
-      } catch(_) {}
-    }
-    if (!runId) throw new Error('Actions 실행을 찾을 수 없습니다.\n레포 Actions 탭에서 워크플로우가 활성화되어 있는지 확인하세요.');
-
-    // 완료 대기 (최대 5분)
-    const TIMEOUT = 5 * 60 * 1000;
-    while (Date.now() - start < TIMEOUT) {
-      await sleep(10000);
-      try {
-        const r = await fetch(
-          `https://api.github.com/repos/${GH_REPO}/actions/runs/${runId}`,
-          { headers: { 'Accept': 'application/vnd.github+json' } }
-        );
-        const run = await r.json();
-        console.log('[PPT] Actions 상태:', run.status, run.conclusion);
-        if (run.status === 'completed') {
-          if (run.conclusion !== 'success')
-            throw new Error(`Actions 실패 (${run.conclusion}).\n레포 Actions 탭에서 로그를 확인하세요.`);
-          break;
-        }
-      } catch(e) { if (e.message.includes('Actions')) throw e; }
-    }
-    if (Date.now() - start >= TIMEOUT) throw new Error('시간 초과 (5분)');
-
-    // ── 3단계: ppt_result.pptx 다운로드 ────────────
-    clearInterval(timer);
-    btn.textContent = '⬇ 다운로드 중…';
-    await sleep(3000); // 커밋 반영 대기
-
-    const pptRes = await fetch(PPT_RESULT_URL + '?t=' + Date.now());
-    if (!pptRes.ok) throw new Error('PPTX 파일을 받아올 수 없습니다.');
-
-    const blob = await pptRes.blob();
-    const weekLabel = allWeeks.find(w => w.isoKey === isoKey)?.label || '';
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `성과지표보고_${weekLabel.replace(/\s/g,'_')}.pptx`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-
-  } catch(e) {
-    clearInterval(timer);
-    alert(`❌ PPT 생성 실패\n\n${e.message}`);
-  } finally {
-    clearInterval(timer);
-    btn.textContent = '📊 PPT 보고서';
-    btn.disabled = false;
-  }
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 </script>
 </body>
